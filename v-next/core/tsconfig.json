@@ -1,0 +1,19 @@
+{
+  "extends": "../../config/v-next/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "composite": true,
+    "incremental": true,
+    "jsx": "react"
+  },
+  "exclude": [
+    "./dist",
+    "./node_modules",
+    "./test/fixture-projects/hardhat.config.ts"
+  ],
+  "references": [
+    {
+      "path": "../hardhat-core/src"
+    }
+  ]
+}
