@@ -1,17 +1,20 @@
 {
   "extends": "../../config-v-next/tsconfig.json",
-  "compilerOptions": {
-    "isolatedDeclarations": false
-  },
   "references": [
-    {
-      "path": "../core"
-    },
     {
       "path": "../hardhat-node-test-reporter"
     },
     {
       "path": "../hardhat-test-utils"
+    },
+    {
+      "path": "../hardhat-utils"
+    },
+    {
+      "path": "../hardhat"
+    },
+    {
+      "paths": "../hardhat-zod-utils"
     }
   ]
 }

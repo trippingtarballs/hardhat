@@ -9,6 +9,8 @@ import {
   globalOption,
 } from "@ignored/hardhat-vnext/config";
 
+import networkManagerPlugin from "@ignored/hardhat-vnext-network-manager";
+
 const exampleEmptyTask = emptyTask("empty", "An example empty task").build();
 
 const exampleEmptySubtask = task(["empty", "task"])
@@ -138,8 +140,14 @@ const config: HardhatUserConfig = {
     exampleEmptySubtask,
     greeting,
   ],
-  plugins: [pluginExample],
+  plugins: [pluginExample, networkManagerPlugin],
   privateKey: configVariable("privateKey"),
+  networks: {
+    hardhat: {
+      type: "http",
+      url: "http://localhost:8545",
+    },
+  },
 };
 
 export default config;

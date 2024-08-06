@@ -3,6 +3,9 @@
   "references": [
     {
       "path": "../hardhat"
+    },
+    {
+      "path": "../network-manager"
     }
   ]
 }
