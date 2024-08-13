@@ -4,7 +4,7 @@ import "./type-extensions.js";
 import { ArgumentType, globalOption } from "@ignored/hardhat-vnext/config";
 
 const networkManagerPlugin: HardhatPlugin = {
-  id: "network-manager",
+  id: "builtin:network-manager",
   hookHandlers: {
     config: import.meta.resolve("./hooks/config.js"),
     hre: import.meta.resolve("./hooks/hre.js"),
