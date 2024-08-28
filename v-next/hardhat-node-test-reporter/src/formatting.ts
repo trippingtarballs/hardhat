@@ -64,14 +64,14 @@ export function formatTestFailure(failure: Failure): string {
   );
 }
 
-export function formatFailureReason(failure: Failure): string {
+export async function formatFailureReason(failure: Failure): Promise<string> {
   return `${formatTestContext(
     failure.contextStack,
     `${formatFailureIndex(failure.index)}) `,
     ":",
   )}
 
-${indent(formatError(failure.testFail.details.error), 3)}`;
+${indent(await formatError(failure.testFail.details.error), 3)}`;
 }
 
 export function formatSlowTestInfo(durationMs: number): string {

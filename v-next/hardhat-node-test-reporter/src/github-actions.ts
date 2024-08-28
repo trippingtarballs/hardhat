@@ -25,7 +25,7 @@ export async function annotatePR(
 
   const { default: core } = await import("@actions/core");
 
-  core.error(formatError(error), {
+  core.error(await formatError(error), {
     file: location.file,
     startLine: location.line,
     startColumn: location.column,

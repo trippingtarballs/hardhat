@@ -1,5 +1,7 @@
 import type { ErrorDescriptor } from "./descriptors.js";
 
+import { inspect } from "node:util";
+
 import { CustomError } from "@ignored/hardhat-vnext-utils/error";
 import { isObject } from "@ignored/hardhat-vnext-utils/lang";
 
@@ -210,6 +212,10 @@ export class HardhatPluginError extends CustomError {
     );
 
     return isHardhatPluginErrorProperty?.value === true;
+  }
+
+  public [inspect.custom]() {
+    return `This is a title of a HardhatPluginError!\n${this.message}\nThis is the stack of a HardhatPluginError!`
   }
 }
 

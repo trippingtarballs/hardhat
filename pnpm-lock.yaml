@@ -1510,6 +1510,9 @@ importers:
       '@ignored/hardhat-vnext':
         specifier: workspace:^3.0.0-next.3
         version: link:../hardhat
+      '@ignored/hardhat-vnext-errors':
+        specifier: workspace:^3.0.0-next.2
+        version: link:../hardhat-errors
       '@ignored/hardhat-vnext-mocha-test-runner':
         specifier: workspace:^3.0.0-next.2
         version: link:../hardhat-mocha-test-runner
@@ -1898,6 +1901,9 @@ importers:
       '@actions/core':
         specifier: ^1.10.1
         version: 1.10.1
+      '@ignored/hardhat-vnext-errors':
+        specifier: workspace:^3.0.0-next.2
+        version: link:../hardhat-errors
       chalk:
         specifier: ^5.3.0
         version: 5.3.0
@@ -1953,9 +1959,6 @@ importers:
       '@ignored/hardhat-vnext':
         specifier: workspace:^3.0.0-next.2
         version: link:../hardhat
-      '@ignored/hardhat-vnext-errors':
-        specifier: workspace:^3.0.0-next.2
-        version: link:../hardhat-errors
       '@ignored/hardhat-vnext-node-test-reporter':
         specifier: workspace:^3.0.0-next.2
         version: link:../hardhat-node-test-reporter

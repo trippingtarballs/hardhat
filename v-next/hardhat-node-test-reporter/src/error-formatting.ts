@@ -13,7 +13,7 @@ import {
 } from "./node-test-error-utils.js";
 
 // TODO: Clean up the node internal fames from the stack trace
-export function formatError(error: Error): string {
+export async function formatError(error: Error): Promise<string> {
   if (isCancelledByParentError(error)) {
     return (
       chalk.red("Test cancelled by parent error") +
@@ -36,6 +36,17 @@ export function formatError(error: Error): string {
   }
 
   error = cleanupTestFailError(error);
+
+  if (error.name === "HardhatPluginError") {
+    try {
+      const { HardhatPluginError } = await import("@ignored/hardhat-vnext-errors");
+      if (HardhatPluginError.isHardhatPluginError(error)) {
+        error = new HardhatPluginError(error.pluginId, error.message, error.cause as Error | undefined);
+      }
+    } catch (e) {
+      console.debug(e);
+    }
+  }
 
   const defaultFormat = inspect(error);
   const indexOfMessage = defaultFormat.indexOf(error.message);

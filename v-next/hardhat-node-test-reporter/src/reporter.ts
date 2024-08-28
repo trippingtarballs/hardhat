@@ -106,7 +106,7 @@ export default async function* customReporter(
               await annotatePR(event.data);
 
               preFormattedFailureReasons.push(
-                formatFailureReason({
+                await formatFailureReason({
                   index: preFormattedFailureReasons.length,
                   testFail: event.data,
                   contextStack: stack,
@@ -165,7 +165,7 @@ export default async function* customReporter(
 
           // We format the failure reason and store it in an array, so that we
           // can output it at the end.
-          preFormattedFailureReasons.push(formatFailureReason(failure));
+          preFormattedFailureReasons.push(await formatFailureReason(failure));
 
           await annotatePR(event.data);
 
