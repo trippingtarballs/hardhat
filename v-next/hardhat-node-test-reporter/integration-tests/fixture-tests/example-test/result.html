@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- This file was created with the aha Ansi HTML Adapter. https://github.com/theZiz/aha -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xml+xhtml; charset=UTF-8"/>
+<title>stdin</title>
+</head>
+<body style="color:white; background-color:black">
+<pre>
+1
+2
+  Foooo
+    <span style="filter: contrast(70%) brightness(190%);color:dimgray;"></span><span style="color:lime;">✔</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> test</span>
+    <span style="color:red;">1) test with cause</span>
+    child
+      <span style="color:red;">2) asdasd</span>
+
+  a
+    aa
+      aaa
+        <span style="filter: contrast(70%) brightness(190%);color:dimgray;"></span><span style="color:lime;">✔</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> aaaa</span>
+
+  top level test
+    <span style="filter: contrast(70%) brightness(190%);color:dimgray;"></span><span style="color:lime;">✔</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> bar</span>
+
+  <span style="filter: contrast(70%) brightness(190%);color:dimgray;"></span><span style="color:lime;">✔</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> top level test</span>
+
+  in describe
+    <span style="color:red;">3) foo</span>
+
+  testing before each
+    nested
+      <span style="filter: contrast(70%) brightness(190%);color:dimgray;"></span><span style="color:lime;">✔</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> neseted foo</span>
+      <span style="filter: contrast(70%) brightness(190%);color:dimgray;"></span><span style="color:lime;">✔</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> neseted foo 2</span>
+
+
+  <span style="color:#3333FF;">+ todo test</span>
+
+  <span style="color:aqua;">- skipped test</span>
+
+
+<span style="color:lime;">6 passing</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> (160ms)</span><span style="color:red;"></span>
+<span style="color:red;">2 failing</span><span style="color:aqua;"></span>
+<span style="color:aqua;">1 skipped</span><span style="color:#3333FF;"></span>
+<span style="color:#3333FF;">1 todo</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"></span>
+<span style="filter: contrast(70%) brightness(190%);color:dimgray;">1 cancelled</span>
+
+  1) Foooo
+       test with cause:
+
+   <span style="color:red;">Error: withCause</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestContext.&lt;anonymous&gt; (integration-tests/fixture-tests/example-test/test.ts:7:11)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at Test.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    ... 6 lines matching cause stack trace ...</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Test.processPendingSubtests (node:internal/test_runner/test:565:7) {</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  [cause]: Error: cause</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at TestContext.&lt;anonymous&gt; (integration-tests/fixture-tests/example-test/test.ts:7:43)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Test.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Test.run (node:internal/test_runner/test:856:25)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Suite.processPendingSubtests (node:internal/test_runner/test:565:18)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Test.postRun (node:internal/test_runner/test:955:19)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Test.run (node:internal/test_runner/test:898:12)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at async Promise.all (index 0)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at async Suite.run (node:internal/test_runner/test:1217:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at async Test.processPendingSubtests (node:internal/test_runner/test:565:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">}</span>
+
+  2) Foooo
+       child
+         asdasd:
+
+   <span style="color:red;">Error: Different arrays</span>
+   <span style="color:lime;">- Expected</span>
+   <span style="color:red;">+ Received</span>
+   
+     Array [
+       1,
+   <span style="color:lime;">-   2,</span>
+   <span style="color:red;">+   3,</span>
+       3,
+     ]
+   
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestContext.&lt;anonymous&gt; (integration-tests/fixture-tests/example-test/test.ts:12:21)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at Test.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    ... 7 lines matching cause stack trace ...</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at Array.map (&lt;anonymous&gt;) {</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  [cause]: Error: cause</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at TestContext.&lt;anonymous&gt; (integration-tests/fixture-tests/example-test/test.ts:13:16)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Test.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Test.run (node:internal/test_runner/test:856:25)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Test.start (node:internal/test_runner/test:753:17)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at node:internal/test_runner/test:1215:71</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at node:internal/per_context/primordials:488:82</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at new Promise (&lt;anonymous&gt;)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at new SafePromise (node:internal/per_context/primordials:456:29)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at node:internal/per_context/primordials:488:9</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Array.map (&lt;anonymous&gt;)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">}</span>
+
+  3) in describe
+       foo:
+
+   <span style="color:red;">Test cancelled by parent error</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    This test was cancelled due to an error in its parent suite/it or test/it, or in one of its before/beforeEach</span>
+
+  4) in describe:
+
+   <span style="color:red;">Error: before</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at SuiteContext.&lt;anonymous&gt; (integration-tests/fixture-tests/example-test/test.ts:51:11)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:856:25)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:1107:18)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/util:538:20)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at node:internal/test_runner/test:776:20</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.runHook (node:internal/test_runner/test:774:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.run (node:internal/test_runner/test:1211:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Test.processPendingSubtests (node:internal/test_runner/test:565:7)</span>
+
+</pre>
+</body>
+</html>

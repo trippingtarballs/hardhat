@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- This file was created with the aha Ansi HTML Adapter. https://github.com/theZiz/aha -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xml+xhtml; charset=UTF-8"/>
+<title>stdin</title>
+</head>
+<body style="color:white; background-color:black">
+<pre>
+
+  <span style="filter: contrast(70%) brightness(190%);color:dimgray;"></span><span style="color:lime;">✔</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> slow test</span> <span style="color:red;"></span><span style="font-style:italic;color:red;">(101ms)</span><span style="color:red;"></span>
+
+  <span style="color:red;">1) assertion error in slow test</span> <span style="color:red;"></span><span style="font-style:italic;color:red;">(102ms)</span><span style="color:red;"></span>
+
+
+<span style="color:lime;">1 passing</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> (345ms)</span><span style="color:red;"></span>
+<span style="color:red;">1 failing</span>
+
+  1) assertion error in slow test:
+
+   <span style="color:red;">AssertionError: Expected values to be strictly equal</span>
+   <span style="color:lime;">- Expected</span>
+   <span style="color:red;">+ Received</span>
+   
+   <span style="color:lime;">- 2</span>
+   <span style="color:red;">+ 1</span>
+   
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestContext.&lt;anonymous&gt; (integration-tests/fixture-tests/slow-test/test.ts:11:10)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Test.run (node:internal/test_runner/test:857:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Test.processPendingSubtests (node:internal/test_runner/test:565:7) {</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  generatedMessage: true,</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  code: 'ERR_ASSERTION',</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  actual: 1,</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  expected: 2,</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  operator: 'strictEqual'</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">}</span>
+
+</pre>
+</body>
+</html>

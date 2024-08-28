@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- This file was created with the aha Ansi HTML Adapter. https://github.com/theZiz/aha -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xml+xhtml; charset=UTF-8"/>
+<title>stdin</title>
+</head>
+<body style="color:white; background-color:black">
+<pre>
+  level 0
+    level 1
+      level 2
+        <span style="filter: contrast(70%) brightness(190%);color:dimgray;"></span><span style="color:lime;">✔</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> nested test</span>
+        <span style="color:red;">1) assertion error in nested test</span>
+        <span style="color:red;">2) error with cause in nested test</span>
+
+
+<span style="color:lime;">1 passing</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> (150ms)</span><span style="color:red;"></span>
+<span style="color:red;">2 failing</span>
+
+  1) level 0
+       level 1
+         level 2
+           assertion error in nested test:
+
+   <span style="color:red;">AssertionError: Expected values to be strictly equal</span>
+   <span style="color:lime;">- Expected</span>
+   <span style="color:red;">+ Received</span>
+   
+   <span style="color:lime;">- 2</span>
+   <span style="color:red;">+ 1</span>
+   
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestContext.&lt;anonymous&gt; (integration-tests/fixture-tests/nested-test/test.ts:12:16)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at Test.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at Test.run (node:internal/test_runner/test:856:25)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at Suite.processPendingSubtests (node:internal/test_runner/test:565:18)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at Test.postRun (node:internal/test_runner/test:955:19)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at Test.run (node:internal/test_runner/test:898:12)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Promise.all (index 0)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.run (node:internal/test_runner/test:1217:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Promise.all (index 0)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.run (node:internal/test_runner/test:1217:7) {</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  generatedMessage: true,</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  code: 'ERR_ASSERTION',</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  actual: 1,</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  expected: 2,</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  operator: 'strictEqual'</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">}</span>
+
+  2) level 0
+       level 1
+         level 2
+           error with cause in nested test:
+
+   <span style="color:red;">Error: error with cause</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestContext.&lt;anonymous&gt; (integration-tests/fixture-tests/nested-test/test.ts:16:15)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at Test.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    ... 4 lines matching cause stack trace ...</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.processPendingSubtests (node:internal/test_runner/test:565:7) {</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">  [cause]: Error: cause</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at TestContext.&lt;anonymous&gt; (integration-tests/fixture-tests/nested-test/test.ts:17:18)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Test.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Test.run (node:internal/test_runner/test:856:25)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Suite.processPendingSubtests (node:internal/test_runner/test:565:18)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Test.postRun (node:internal/test_runner/test:955:19)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at Test.run (node:internal/test_runner/test:898:12)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">      at async Suite.processPendingSubtests (node:internal/test_runner/test:565:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">}</span>
+
+</pre>
+</body>
+</html>

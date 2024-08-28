@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- This file was created with the aha Ansi HTML Adapter. https://github.com/theZiz/aha -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xml+xhtml; charset=UTF-8"/>
+<title>stdin</title>
+</head>
+<body style="color:white; background-color:black">
+<pre>
+  after each
+    <span style="color:red;">1) should pass</span>
+    <span style="color:red;">2) should pass, too</span>
+
+  after
+    <span style="filter: contrast(70%) brightness(190%);color:dimgray;"></span><span style="color:lime;">✔</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> should pass</span>
+    <span style="filter: contrast(70%) brightness(190%);color:dimgray;"></span><span style="color:lime;">✔</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> should pass, too</span>
+
+  before each
+    <span style="color:red;">4) should pass</span>
+    <span style="color:red;">5) should pass, too</span>
+
+  before
+    <span style="color:red;">6) should pass</span>
+    <span style="color:red;">7) should pass, too</span>
+
+  describe
+    <span style="color:red;">9) should pass</span>
+    <span style="color:red;">10) should pass, too</span>
+
+
+<span style="color:lime;">2 passing</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"> (164ms)</span><span style="color:red;"></span>
+<span style="color:red;">4 failing</span><span style="filter: contrast(70%) brightness(190%);color:dimgray;"></span>
+<span style="filter: contrast(70%) brightness(190%);color:dimgray;">4 cancelled</span>
+
+  1) after each
+       should pass:
+
+   <span style="color:red;">Error: after each hook error</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestContext.&lt;anonymous&gt; (integration-tests/fixture-tests/hooks-test/after-each.ts:6:11)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:856:25)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:1107:18)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at node:internal/test_runner/test:776:20</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.runHook (node:internal/test_runner/test:774:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async node:internal/test_runner/test:820:9</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Test.run (node:internal/test_runner/test:866:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Promise.all (index 0)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.run (node:internal/test_runner/test:1217:7)</span>
+
+  2) after each
+       should pass, too:
+
+   <span style="color:red;">Error: after each hook error</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestContext.&lt;anonymous&gt; (integration-tests/fixture-tests/hooks-test/after-each.ts:6:11)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:856:25)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:1107:18)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at node:internal/test_runner/test:776:20</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.runHook (node:internal/test_runner/test:774:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async node:internal/test_runner/test:820:9</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Test.run (node:internal/test_runner/test:866:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.processPendingSubtests (node:internal/test_runner/test:565:7)</span>
+
+  3) after:
+
+   <span style="color:red;">Error: after hook error</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at SuiteContext.&lt;anonymous&gt; (integration-tests/fixture-tests/hooks-test/after.ts:6:11)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:856:25)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:1107:18)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/util:538:20)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at node:internal/test_runner/test:776:20</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.runHook (node:internal/test_runner/test:774:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.run (node:internal/test_runner/test:1218:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Test.processPendingSubtests (node:internal/test_runner/test:565:7)</span>
+
+  4) before each
+       should pass:
+
+   <span style="color:red;">Error: before each hook error</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestContext.&lt;anonymous&gt; (integration-tests/fixture-tests/hooks-test/before-each.ts:6:11)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:856:25)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:1107:18)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at node:internal/test_runner/test:776:20</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.runHook (node:internal/test_runner/test:774:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Test.run (node:internal/test_runner/test:832:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Promise.all (index 0)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.run (node:internal/test_runner/test:1217:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Test.processPendingSubtests (node:internal/test_runner/test:565:7)</span>
+
+  5) before each
+       should pass, too:
+
+   <span style="color:red;">Error: before each hook error</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestContext.&lt;anonymous&gt; (integration-tests/fixture-tests/hooks-test/before-each.ts:6:11)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:856:25)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:1107:18)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at node:internal/test_runner/test:776:20</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.runHook (node:internal/test_runner/test:774:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Test.run (node:internal/test_runner/test:832:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.processPendingSubtests (node:internal/test_runner/test:565:7)</span>
+
+  6) before
+       should pass:
+
+   <span style="color:red;">Test cancelled by parent error</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    This test was cancelled due to an error in its parent suite/it or test/it, or in one of its before/beforeEach</span>
+
+  7) before
+       should pass, too:
+
+   <span style="color:red;">Test cancelled by parent error</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    This test was cancelled due to an error in its parent suite/it or test/it, or in one of its before/beforeEach</span>
+
+  8) before:
+
+   <span style="color:red;">Error: before hook error</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at SuiteContext.&lt;anonymous&gt; (integration-tests/fixture-tests/hooks-test/before.ts:6:11)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:856:25)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/test_runner/test:1107:18)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at TestHook.run (node:internal/util:538:20)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at node:internal/test_runner/test:776:20</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.runHook (node:internal/test_runner/test:774:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Suite.run (node:internal/test_runner/test:1211:7)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async Test.processPendingSubtests (node:internal/test_runner/test:565:7)</span>
+
+  9) describe
+       should pass:
+
+   <span style="color:red;">Test cancelled by parent error</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    This test was cancelled due to an error in its parent suite/it or test/it, or in one of its before/beforeEach</span>
+
+  10) describe
+        should pass, too:
+
+   <span style="color:red;">Test cancelled by parent error</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    This test was cancelled due to an error in its parent suite/it or test/it, or in one of its before/beforeEach</span>
+
+  11) describe:
+
+   <span style="color:red;">Error: describe setup error</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at SuiteContext.&lt;anonymous&gt; (integration-tests/fixture-tests/hooks-test/describe.ts:13:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at Suite.runInAsyncScope (node:async_hooks:206:9)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at new Suite (node:internal/test_runner/test:1153:26)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at Test.createSubtest (node:internal/test_runner/test:629:18)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at run (node:internal/test_runner/harness:258:28)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at test (node:internal/test_runner/harness:271:12)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at &lt;anonymous&gt; (integration-tests/fixture-tests/hooks-test/describe.ts:4:1)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at ModuleJob.run (node:internal/modules/esm/module_job:262:25)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:485:26)</span>
+   <span style="filter: contrast(70%) brightness(190%);color:dimgray;">    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:109:5)</span>
+
+</pre>
+</body>
+</html>
