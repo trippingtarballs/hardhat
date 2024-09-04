@@ -13,6 +13,7 @@ import type { UserInterruptionManager } from "../../types/user-interruptions.js"
 
 import { HardhatError } from "@ignored/hardhat-vnext-errors";
 import { findClosestPackageRoot } from "@ignored/hardhat-vnext-utils/package";
+import { abc } from "def";
 
 import { validateUserConfig } from "./config-validation.js";
 import { ResolvedConfigurationVariableImplementation } from "./configuration-variables.js";
@@ -39,6 +40,8 @@ export class HardhatRuntimeEnvironmentImplementation
     projectRoot?: string,
     unsafeOptions?: UnsafeHardhatRuntimeEnvironmentOptions,
   ): Promise<HardhatRuntimeEnvironmentImplementation> {
+    abc();
+    
     const resolvedProjectRoot = await resolveProjectRoot(projectRoot);
 
     const resolvedPlugins =
