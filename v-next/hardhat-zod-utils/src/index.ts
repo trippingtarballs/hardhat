@@ -92,6 +92,9 @@ export const conditionalUnionType = (
 /**
  * Creates a Zod type to validate that a field of an object doesn't exist.
  *
+ * This is useful when you have a {@link conditionalUnionType} that represents
+ * a union of object types with incompatible fields between each other.
+ *
  * @example
  * ```ts
  * const type = z.object({
@@ -103,7 +106,7 @@ export const conditionalUnionType = (
  * @param errorMessage The error message to display if the field is present.
  * @returns A Zod type that validates that a field of an object doesn't exist.
  */
-export const unexpectedFieldType = (errorMessage = "Unexpected field") =>
+export const incompatibleFieldType = (errorMessage = "Unexpected field") =>
   z
     .never({
       errorMap: () => ({

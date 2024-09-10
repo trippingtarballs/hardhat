@@ -11,7 +11,7 @@ import { isObject } from "@ignored/hardhat-vnext-utils/lang";
 import { resolveFromRoot } from "@ignored/hardhat-vnext-utils/path";
 import {
   conditionalUnionType,
-  unexpectedFieldType,
+  incompatibleFieldType,
   validateUserConfigZodType,
 } from "@ignored/hardhat-vnext-zod-utils";
 import { z } from "zod";
@@ -27,25 +27,34 @@ const sourcePathsType = conditionalUnionType(
 const solcUserConfigType = z.object({
   version: z.string(),
   settings: z.any().optional(),
+  compilers: incompatibleFieldType("This field is incompatible with `version`"),
+  overrides: incompatibleFieldType("This field is incompatible with `version`"),
+  profiles: incompatibleFieldType("This field is incompatible with `version`"),
 });
 
 const multiVersionSolcUserConfigType = z.object({
   compilers: z.array(solcUserConfigType).nonempty(),
   overrides: z.record(z.string(), solcUserConfigType).optional(),
+  version: incompatibleFieldType("This field is incompatible with `compilers`"),
+  settings: incompatibleFieldType(
+    "This field is incompatible with `compilers`",
+  ),
 });
 
 const singleVersionSolidityUserConfigType = solcUserConfigType.extend({
   dependenciesToCompile: z.array(z.string()).optional(),
-  compilers: unexpectedFieldType("This field is incompatible with `version`"),
-  overrides: unexpectedFieldType("This field is incompatible with `version`"),
-  profiles: unexpectedFieldType("This field is incompatible with `version`"),
+  compilers: incompatibleFieldType("This field is incompatible with `version`"),
+  overrides: incompatibleFieldType("This field is incompatible with `version`"),
+  profiles: incompatibleFieldType("This field is incompatible with `version`"),
 });
 
 const multiVersionSolidityUserConfigType =
   multiVersionSolcUserConfigType.extend({
     dependenciesToCompile: z.array(z.string()).optional(),
-    version: unexpectedFieldType("This field is incompatible with `compilers`"),
-    profiles: unexpectedFieldType(
+    version: incompatibleFieldType(
+      "This field is incompatible with `compilers`",
+    ),
+    profiles: incompatibleFieldType(
       "This field is incompatible with `compilers`",
     ),
   });
@@ -65,9 +74,13 @@ const buildProfilesSolidityUserConfigType = z.object({
     ),
   ),
   dependenciesToCompile: z.array(z.string()).optional(),
-  version: unexpectedFieldType("This field is incompatible with `profiles`"),
-  compilers: unexpectedFieldType("This field is incompatible with `profiles`"),
-  overrides: unexpectedFieldType("This field is incompatible with `profiles`"),
+  version: incompatibleFieldType("This field is incompatible with `profiles`"),
+  compilers: incompatibleFieldType(
+    "This field is incompatible with `profiles`",
+  ),
+  overrides: incompatibleFieldType(
+    "This field is incompatible with `profiles`",
+  ),
 });
 
 const soldityUserConfigType = conditionalUnionType(
@@ -264,19 +277,6 @@ function resolveSolidityConfig(
           },
         ),
       ),
-    };
-  }
-
-  // TODO: Maybe make this required?
-  if (!("default" in solidityConfig)) {
-    profiles.default = {
-      compilers: [
-        {
-          version: "0.8.0",
-          settings: {},
-        },
-      ],
-      overrides: {},
     };
   }
 

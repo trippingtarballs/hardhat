@@ -60,6 +60,6 @@ declare module "../../../types/config.js" {
   }
 
   export interface SourcePathsConfig {
-    solidity: string | string[];
+    solidity: string[];
   }
 }
