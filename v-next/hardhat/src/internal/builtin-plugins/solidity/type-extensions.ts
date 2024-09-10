@@ -4,22 +4,32 @@ declare module "../../../types/config.js" {
   export type SolidityUserConfig =
     | string
     | string[]
-    | SolcUserConfig
-    | MultiSolcUserConfig
-    | SolidityBuildProfilesUserConfig;
+    | SingleVersionSolidityUserConfig
+    | MultiVersionSolidityUserConfig
+    | BuildProfilesSolidityUserConfig;
 
   export interface SolcUserConfig {
     version: string;
     settings?: any;
   }
 
-  export interface MultiSolcUserConfig {
+  export interface MultiVersionSolcUserConfig {
     compilers: SolcUserConfig[];
     overrides?: Record<string, SolcUserConfig>;
   }
 
-  export interface SolidityBuildProfilesUserConfig {
-    profiles: Record<string, SolcUserConfig | MultiSolcUserConfig>;
+  export interface SingleVersionSolidityUserConfig extends SolcUserConfig {
+    dependenciesToCompile?: string[];
+  }
+
+  export interface MultiVersionSolidityUserConfig
+    extends MultiVersionSolcUserConfig {
+    dependenciesToCompile?: string[];
+  }
+
+  export interface BuildProfilesSolidityUserConfig {
+    profiles: Record<string, SolcUserConfig | MultiVersionSolcUserConfig>;
+    dependenciesToCompile?: string[];
   }
 
   export interface HardhatUserConfig {
@@ -38,6 +48,7 @@ declare module "../../../types/config.js" {
 
   export interface SolidityConfig {
     profiles: Record<string, SolidityBuildProfileConfig>;
+    dependenciesToCompile?: string[];
   }
 
   export interface HardhatConfig {
