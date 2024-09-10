@@ -131,6 +131,7 @@ const config: HardhatUserConfig = {
       nodeTest: "test/node",
     },
   },
+  solidity: { version: "asd", compilers: [] },
 };
 
 export default config;

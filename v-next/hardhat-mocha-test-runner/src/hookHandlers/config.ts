@@ -72,10 +72,14 @@ const mochaConfigType = z.object({
 
 const userConfigType = z.object({
   mocha: z.optional(mochaConfigType),
-  test: unionType(
-    [z.object({ mocha: z.string().optional() }), z.string()],
-    "Expected a string or an object with an optional 'mocha' property",
-  ).optional(),
+  paths: z
+    .object({
+      test: unionType(
+        [z.object({ mocha: z.string().optional() }), z.string()],
+        "Expected a string or an object with an optional 'mocha' property",
+      ).optional(),
+    })
+    .optional(),
 });
 
 export default async (): Promise<Partial<ConfigHooks>> => {
