@@ -90,6 +90,29 @@ export const conditionalUnionType = (
   });
 
 /**
+ * Creates a Zod type to validate that a field of an object doesn't exist.
+ *
+ * @example
+ * ```ts
+ * const type = z.object({
+ *   foo: z.string(),
+ *   bar: unexpectedFieldType("This field is incompatible with `foo`"),
+ * });
+ * ```
+ *
+ * @param errorMessage The error message to display if the field is present.
+ * @returns A Zod type that validates that a field of an object doesn't exist.
+ */
+export const unexpectedFieldType = (errorMessage = "Unexpected field") =>
+  z
+    .never({
+      errorMap: () => ({
+        message: errorMessage,
+      }),
+    })
+    .optional();
+
+/**
  * A Zod type to validate Hardhat's ConfigurationVariable objects.
  */
 export const configurationVariableType = z.object({

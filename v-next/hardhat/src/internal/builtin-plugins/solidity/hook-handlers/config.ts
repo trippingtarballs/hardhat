@@ -1,7 +1,5 @@
 import type { ConfigHooks } from "../../../../types/hooks.js";
 
-import path from "node:path";
-
 import {
   resolveSolidityUserConfig,
   validateSolidityUserConfig,
@@ -9,7 +7,8 @@ import {
 
 export default async (): Promise<Partial<ConfigHooks>> => {
   const handlers: Partial<ConfigHooks> = {
-    validateUserConfig: validateSolidityUserConfig,
+    validateUserConfig: async (userConfig) =>
+      validateSolidityUserConfig(userConfig),
     resolveUserConfig: async (
       userConfig,
       resolveConfigurationVariable,

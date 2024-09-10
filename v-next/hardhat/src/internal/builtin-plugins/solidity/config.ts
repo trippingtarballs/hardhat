@@ -1,16 +1,20 @@
 import type { HardhatUserConfig } from "../../../config.js";
-import type { HardhatConfig } from "../../../types/config.js";
-import type { HardhatUserConfigValidationError } from "@ignored/hardhat-vnext-zod-utils";
-
-import path from "node:path";
+import type {
+  HardhatConfig,
+  SolidityBuildProfileConfig,
+  SolidityConfig,
+  SolidityUserConfig,
+} from "../../../types/config.js";
+import type { HardhatUserConfigValidationError } from "../../../types/hooks.js";
 
 import { isObject } from "@ignored/hardhat-vnext-utils/lang";
+import { resolveFromRoot } from "@ignored/hardhat-vnext-utils/path";
 import {
   conditionalUnionType,
+  unexpectedFieldType,
   validateUserConfigZodType,
 } from "@ignored/hardhat-vnext-zod-utils";
 import { z } from "zod";
-import { resolveFromRoot } from "@ignored/hardhat-vnext-utils/path";
 
 const sourcePathsType = conditionalUnionType(
   [
@@ -32,11 +36,17 @@ const multiVersionSolcUserConfigType = z.object({
 
 const singleVersionSolidityUserConfigType = solcUserConfigType.extend({
   dependenciesToCompile: z.array(z.string()).optional(),
+  compilers: unexpectedFieldType("This field is incompatible with `version`"),
+  profiles: unexpectedFieldType("This field is incompatible with `version`"),
 });
 
 const multiVersionSolidityUserConfigType =
   multiVersionSolcUserConfigType.extend({
     dependenciesToCompile: z.array(z.string()).optional(),
+    version: unexpectedFieldType("This field is incompatible with `compilers`"),
+    profiles: unexpectedFieldType(
+      "This field is incompatible with `compilers`",
+    ),
   });
 
 const buildProfilesSolidityUserConfigType = z.object({
@@ -54,6 +64,8 @@ const buildProfilesSolidityUserConfigType = z.object({
     ),
   ),
   dependenciesToCompile: z.array(z.string()).optional(),
+  version: unexpectedFieldType("This field is incompatible with `profiles`"),
+  compilers: unexpectedFieldType("This field is incompatible with `profiles`"),
 });
 
 const soldityUserConfigType = conditionalUnionType(
@@ -94,9 +106,9 @@ const userConfigType = z.object({
   solidity: soldityUserConfigType.optional(),
 });
 
-export async function validateSolidityUserConfig(
+export function validateSolidityUserConfig(
   userConfig: unknown,
-): Promise<HardhatUserConfigValidationError[]> {
+): HardhatUserConfigValidationError[] {
   return validateUserConfigZodType(userConfig, userConfigType);
 }
 
@@ -129,5 +141,102 @@ export async function resolveSolidityUserConfig(
         solidity: resolvedPaths,
       },
     },
+    solidity: resolveSolidityConfig(userConfig.solidity ?? "0.8.0"),
+  };
+}
+
+function resolveSolidityConfig(
+  solidityConfig: SolidityUserConfig,
+): SolidityConfig {
+  if (typeof solidityConfig === "string") {
+    solidityConfig = [solidityConfig];
+  }
+
+  if (Array.isArray(solidityConfig)) {
+    return {
+      profiles: {
+        default: {
+          compilers: solidityConfig.map((version) => ({
+            version,
+            settings: {},
+          })),
+          overrides: {},
+        },
+      },
+    };
+  }
+
+  if ("version" in solidityConfig) {
+    return {
+      profiles: {
+        default: {
+          compilers: [
+            {
+              version: solidityConfig.version,
+              settings: solidityConfig.settings ?? {},
+            },
+          ],
+          overrides: {},
+        },
+      },
+    };
+  }
+
+  if ("compilers" in solidityConfig) {
+    return {
+      profiles: {
+        default: {
+          compilers: solidityConfig.compilers.map((compiler) => ({
+            version: compiler.version,
+            settings: compiler.settings ?? {},
+          })),
+          overrides: {},
+        },
+      },
+    };
+  }
+
+  const profiles: Record<string, SolidityBuildProfileConfig> = {};
+
+  for (const [profileName, profile] of Object.entries(
+    solidityConfig.profiles,
+  )) {
+    if ("version" in profile) {
+      profiles[profileName] = {
+        compilers: [
+          {
+            version: profile.version,
+            settings: profile.settings ?? {},
+          },
+        ],
+        overrides: {},
+      };
+      continue;
+    }
+
+    profiles[profileName] = {
+      compilers: profile.compilers.map((compiler) => ({
+        version: compiler.version,
+        settings: compiler.settings ?? {},
+      })),
+      overrides: {},
+    };
+  }
+
+  // TODO: Maybe make this required?
+  if (!("default" in solidityConfig)) {
+    profiles.default = {
+      compilers: [
+        {
+          version: "0.8.0",
+          settings: {},
+        },
+      ],
+      overrides: {},
+    };
+  }
+
+  return {
+    profiles,
   };
 }
