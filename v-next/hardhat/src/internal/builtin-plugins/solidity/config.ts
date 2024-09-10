@@ -37,6 +37,7 @@ const multiVersionSolcUserConfigType = z.object({
 const singleVersionSolidityUserConfigType = solcUserConfigType.extend({
   dependenciesToCompile: z.array(z.string()).optional(),
   compilers: unexpectedFieldType("This field is incompatible with `version`"),
+  overrides: unexpectedFieldType("This field is incompatible with `version`"),
   profiles: unexpectedFieldType("This field is incompatible with `version`"),
 });
 
@@ -66,6 +67,7 @@ const buildProfilesSolidityUserConfigType = z.object({
   dependenciesToCompile: z.array(z.string()).optional(),
   version: unexpectedFieldType("This field is incompatible with `profiles`"),
   compilers: unexpectedFieldType("This field is incompatible with `profiles`"),
+  overrides: unexpectedFieldType("This field is incompatible with `profiles`"),
 });
 
 const soldityUserConfigType = conditionalUnionType(
@@ -109,7 +111,22 @@ const userConfigType = z.object({
 export function validateSolidityUserConfig(
   userConfig: unknown,
 ): HardhatUserConfigValidationError[] {
-  return validateUserConfigZodType(userConfig, userConfigType);
+  const result = validateUserConfigZodType(userConfig, userConfigType);
+
+  if (
+    isObject(userConfig) &&
+    isObject(userConfig.solidity) &&
+    isObject(userConfig.solidity.profiles) &&
+    !("default" in userConfig.solidity.profiles)
+  ) {
+    result.push({
+      message:
+        "The 'default' profile is required when using Solidity build profiles",
+      path: ["solidity", "profiles"],
+    });
+  }
+
+  return result;
 }
 
 export async function resolveSolidityUserConfig(
@@ -163,6 +180,7 @@ function resolveSolidityConfig(
           overrides: {},
         },
       },
+      dependenciesToCompile: [],
     };
   }
 
@@ -179,6 +197,7 @@ function resolveSolidityConfig(
           overrides: {},
         },
       },
+      dependenciesToCompile: solidityConfig.dependenciesToCompile ?? [],
     };
   }
 
@@ -190,9 +209,22 @@ function resolveSolidityConfig(
             version: compiler.version,
             settings: compiler.settings ?? {},
           })),
-          overrides: {},
+          overrides: Object.fromEntries(
+            Object.entries(solidityConfig.overrides ?? {}).map(
+              ([sourceName, override]) => {
+                return [
+                  sourceName,
+                  {
+                    version: override.version,
+                    settings: override.settings ?? {},
+                  },
+                ];
+              },
+            ),
+          ),
         },
       },
+      dependenciesToCompile: solidityConfig.dependenciesToCompile ?? [],
     };
   }
 
@@ -219,7 +251,19 @@ function resolveSolidityConfig(
         version: compiler.version,
         settings: compiler.settings ?? {},
       })),
-      overrides: {},
+      overrides: Object.fromEntries(
+        Object.entries(profile.overrides ?? {}).map(
+          ([sourceName, override]) => {
+            return [
+              sourceName,
+              {
+                version: override.version,
+                settings: override.settings ?? {},
+              },
+            ];
+          },
+        ),
+      ),
     };
   }
 
@@ -238,5 +282,6 @@ function resolveSolidityConfig(
 
   return {
     profiles,
+    dependenciesToCompile: solidityConfig.dependenciesToCompile ?? [],
   };
 }
