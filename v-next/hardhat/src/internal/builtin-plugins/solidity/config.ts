@@ -25,35 +25,52 @@ const solcUserConfigType = z.object({
   settings: z.any().optional(),
 });
 
-const multiSolcUserConfigType = z.object({
+const multiVersionSolcUserConfigType = z.object({
   compilers: z.array(solcUserConfigType).nonempty(),
-  overrides: z.record(solcUserConfigType).optional(),
+  overrides: z.record(z.string(), solcUserConfigType).optional(),
 });
 
-const solidityBuildProfileUserConfigType = z.object({
+const singleVersionSolidityUserConfigType = solcUserConfigType.extend({
+  dependenciesToCompile: z.array(z.string()).optional(),
+});
+
+const multiVersionSolidityUserConfigType =
+  multiVersionSolcUserConfigType.extend({
+    dependenciesToCompile: z.array(z.string()).optional(),
+  });
+
+const buildProfilesSolidityUserConfigType = z.object({
   profiles: z.record(
+    z.string(),
     conditionalUnionType(
       [
         [(data) => isObject(data) && "version" in data, solcUserConfigType],
         [
           (data) => isObject(data) && "compilers" in data,
-          multiSolcUserConfigType,
+          multiVersionSolcUserConfigType,
         ],
       ],
       "Expected an object configuring one or more versions of Solidity",
     ),
   ),
+  dependenciesToCompile: z.array(z.string()).optional(),
 });
 
 const soldityUserConfigType = conditionalUnionType(
   [
     [(data) => typeof data === "string", z.string()],
     [(data) => Array.isArray(data), z.array(z.string()).nonempty()],
-    [(data) => isObject(data) && "version" in data, solcUserConfigType],
-    [(data) => isObject(data) && "compilers" in data, multiSolcUserConfigType],
+    [
+      (data) => isObject(data) && "version" in data,
+      singleVersionSolidityUserConfigType,
+    ],
+    [
+      (data) => isObject(data) && "compilers" in data,
+      multiVersionSolidityUserConfigType,
+    ],
     [
       (data) => isObject(data) && "profiles" in data,
-      solidityBuildProfileUserConfigType,
+      buildProfilesSolidityUserConfigType,
     ],
   ],
   "Expected a version string, an array of version strings, or an object cofiguring one or more versions of Solidity or multiple build profiles",
@@ -80,8 +97,6 @@ const userConfigType = z.object({
 export async function validateSolidityUserConfig(
   userConfig: unknown,
 ): Promise<HardhatUserConfigValidationError[]> {
-  // TODO: Manually validate that there are not type clashes between the
-  // different types of user configs
   return validateUserConfigZodType(userConfig, userConfigType);
 }
 
