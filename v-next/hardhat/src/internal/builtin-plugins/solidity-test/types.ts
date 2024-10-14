@@ -7,7 +7,7 @@ export type TestsStream = Readable;
 
 export type TestEvent =
   | { type: "suite:result"; data: SuiteResult }
-  | { type: "test:complete"; data: undefined };
+  | { type: "run:complete"; data: undefined };
 
 export type TestEventSource = AsyncGenerator<TestEvent, void>;
 export type TestReporterResult = AsyncGenerator<string, void>;

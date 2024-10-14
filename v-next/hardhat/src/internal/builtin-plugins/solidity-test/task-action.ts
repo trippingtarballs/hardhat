@@ -7,7 +7,7 @@ import { buildSolidityTestsInput } from "./helpers.js";
 import { testReporter } from "./reporter.js";
 import { run } from "./runner.js";
 
-const runSolidityTests: NewTaskActionFunction = async (_arguments, hre) => {
+const runSolidityTests: NewTaskActionFunction = async ({ timeout }, hre) => {
   await hre.tasks.getTask("compile").run({ quiet: false });
 
   console.log("\nRunning Solidity tests...\n");
@@ -31,8 +31,13 @@ const runSolidityTests: NewTaskActionFunction = async (_arguments, hre) => {
   };
 
   let includesFailures = false;
+  let includesErrors = false;
 
-  const reporterStream = run(artifacts, testSuiteIds, config)
+  const options = { timeout };
+
+  const runStream = run(artifacts, testSuiteIds, config, options);
+
+  runStream
     .on("data", (event: TestEvent) => {
       if (event.type === "suite:result") {
         if (event.data.testResults.some(({ status }) => status === "Failure")) {
@@ -40,16 +45,19 @@ const runSolidityTests: NewTaskActionFunction = async (_arguments, hre) => {
         }
       }
     })
-    .compose(testReporter);
+    .compose(testReporter)
+    .pipe(process.stdout);
 
-  reporterStream.pipe(process.stdout);
+  // NOTE: We're awaiting the original run stream to finish instead of the
+  // composed reporter stream to catch any errors produced by the runner.
+  try {
+    await finished(runStream);
+  } catch (error) {
+    console.error(error);
+    includesErrors = true;
+  }
 
-  // NOTE: If the stream does not end (e.g. if EDR does not report on all the
-  // test suites), this promise is never resolved but the process will happily
-  // exit with a zero exit code without continuing past this point 😕
-  await finished(reporterStream);
-
-  if (includesFailures) {
+  if (includesFailures || includesErrors) {
     process.exitCode = 1;
     return;
   }

@@ -51,7 +51,7 @@ export async function* testReporter(
         }
         break;
       }
-      case "test:complete": {
+      case "run:complete": {
         yield "\n";
         yield `${testResultCount} tests found, ${successCount} passed, ${failureCount} failed, ${skippedCount} skipped`;
         yield "\n";
