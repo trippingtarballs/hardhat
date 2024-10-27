@@ -106,6 +106,23 @@ const pluginExample = {
 };
 
 const config: HardhatUserConfig = {
+  networks: {
+    op: {
+      type: "http",
+      url: "https://mainnet.optimism.io",
+    },
+    edrOp: {
+      type: "edr",
+      chainId: 10,
+      forkConfig: {
+        jsonRpcUrl: "https://mainnet.optimism.io",
+      },
+      chainType: "optimism",
+      gas: "auto",
+      gasMultiplier: 1,
+      gasPrice: "auto",
+    },
+  },
   tasks: [
     exampleTaskOverride,
     exampleEmptyTask,
