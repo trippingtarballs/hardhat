@@ -1447,7 +1447,7 @@ importers:
         specifier: workspace:^3.0.0-next.0
         version: link:../hardhat-viem
       '@openzeppelin/contracts':
-        specifier: ^5.1.0
+        specifier: 5.1.0
         version: 5.1.0
       '@types/mocha':
         specifier: '>=9.1.0'
