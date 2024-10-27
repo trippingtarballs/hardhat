@@ -34,6 +34,7 @@
     "prettier": "3.2.5",
     "rimraf": "^6.0.1",
     "typescript": "~5.5.0",
-    "viem": "^2.21.17"
+    "viem": "^2.21.17",
+    "forge-std": "foundry-rs/forge-std#v1.9.4"
   }
 }
