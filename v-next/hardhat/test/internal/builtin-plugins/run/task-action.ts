@@ -24,7 +24,7 @@ describe("run/task-action", function () {
     it("should throw if script does not exist", async function () {
       await assertRejectsWithHardhatError(
         runScriptWithHardhat(
-          { script: "./scripts/non-existent.js", noCompile: true },
+          { script: "./scripts/non-existent.js", noCompile: false },
           hre,
         ),
         HardhatError.ERRORS.BUILTIN_TASKS.RUN_FILE_NOT_FOUND,
@@ -36,7 +36,7 @@ describe("run/task-action", function () {
 
     it("should run a script successfully", async function () {
       await runScriptWithHardhat(
-        { script: "./scripts/success.js", noCompile: true },
+        { script: "./scripts/success.js", noCompile: false },
         hre,
       );
     });
@@ -44,7 +44,7 @@ describe("run/task-action", function () {
     it("should throw if the script throws", async function () {
       await assertRejectsWithHardhatError(
         runScriptWithHardhat(
-          { script: "./scripts/throws.js", noCompile: true },
+          { script: "./scripts/throws.js", noCompile: false },
           hre,
         ),
         HardhatError.ERRORS.BUILTIN_TASKS.RUN_SCRIPT_ERROR,
@@ -62,7 +62,7 @@ describe("run/task-action", function () {
     it("should throw if script does not exist", async function () {
       await assertRejectsWithHardhatError(
         runScriptWithHardhat(
-          { script: "./scripts/non-existent.ts", noCompile: true },
+          { script: "./scripts/non-existent.ts", noCompile: false },
           hre,
         ),
         HardhatError.ERRORS.BUILTIN_TASKS.RUN_FILE_NOT_FOUND,
@@ -74,7 +74,7 @@ describe("run/task-action", function () {
 
     it("should run a script successfully", async function () {
       await runScriptWithHardhat(
-        { script: "./scripts/success.ts", noCompile: true },
+        { script: "./scripts/success.ts", noCompile: false },
         hre,
       );
     });
@@ -83,7 +83,7 @@ describe("run/task-action", function () {
       it("should throw RUN_SCRIPT_ERROR if the script throws a non-HardhatError", async function () {
         await assertRejectsWithHardhatError(
           runScriptWithHardhat(
-            { script: "./scripts/throws.ts", noCompile: true },
+            { script: "./scripts/throws.ts", noCompile: false },
             hre,
           ),
           HardhatError.ERRORS.BUILTIN_TASKS.RUN_SCRIPT_ERROR,
@@ -97,7 +97,7 @@ describe("run/task-action", function () {
       it("should throw the HardhatError if the script throws a HardhatError", async function () {
         await assertRejectsWithHardhatError(
           runScriptWithHardhat(
-            { script: "./scripts/throws-hardhat-error.ts", noCompile: true },
+            { script: "./scripts/throws-hardhat-error.ts", noCompile: false },
             hre,
           ),
           HardhatError.ERRORS.INTERNAL.ASSERTION_ERROR,

@@ -14,7 +14,7 @@ const hardhatPlugin: HardhatPlugin = {
       })
       .addFlag({
         name: "noCompile",
-        description: "Don't compile the project before starting the console",
+        description: "Don't compile before running this task",
       })
       .addVariadicArgument({
         name: "commands",
@@ -22,14 +22,6 @@ const hardhatPlugin: HardhatPlugin = {
         defaultValue: [],
       })
       .build(),
-  ],
-  dependencies: [
-    async () => {
-      const { default: solidityBuiltinPlugin } = await import(
-        "../solidity/index.js"
-      );
-      return solidityBuiltinPlugin;
-    },
   ],
 };
 

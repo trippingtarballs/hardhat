@@ -12,7 +12,6 @@ interface TestActionArguments {
   testFiles: string[];
   bail: boolean;
   grep: string;
-  noCompile: boolean;
 }
 
 function isTypescriptFile(path: string): boolean {
@@ -43,13 +42,9 @@ async function getTestFiles(
 
 let testsAlreadyRun = false;
 const testWithHardhat: NewTaskActionFunction<TestActionArguments> = async (
-  { testFiles, bail, grep, noCompile },
+  { testFiles, bail, grep },
   hre,
 ) => {
-  if (!noCompile) {
-    await hre.tasks.getTask("compile").run({ quiet: true });
-  }
-
   const files = await getTestFiles(testFiles, hre.config);
 
   const tsx = fileURLToPath(import.meta.resolve("tsx/esm"));

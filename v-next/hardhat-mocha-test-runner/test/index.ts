@@ -22,7 +22,7 @@ describe("Hardhat Mocha plugin", () => {
 
       const hre = await createHardhatRuntimeEnvironment(hardhatConfig.default);
 
-      const result = await hre.tasks.getTask(["test", "mocha"]).run({});
+      const result = await hre.tasks.getTask("test").run({});
 
       assert.equal(result, 0);
     });

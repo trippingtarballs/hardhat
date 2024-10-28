@@ -170,7 +170,9 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
         ),
       );
 
-      this.#printSolcErrorsAndWarnings(errors);
+      if (options?.quiet !== true) {
+        this.#printSolcErrorsAndWarnings(errors);
+      }
 
       const successfulResult = !this.#hasCompilationErrors(result);
 

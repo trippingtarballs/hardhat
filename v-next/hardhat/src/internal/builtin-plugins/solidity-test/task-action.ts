@@ -8,18 +8,10 @@ import { getArtifacts, isTestArtifact } from "./helpers.js";
 import { testReporter } from "./reporter.js";
 import { run } from "./runner.js";
 
-interface TestActionArguments {
-  timeout: number;
-  noCompile: boolean;
-}
+const runSolidityTests: NewTaskActionFunction = async ({ timeout }, hre) => {
+  await hre.tasks.getTask("compile").run({ quiet: false });
 
-const runSolidityTests: NewTaskActionFunction<TestActionArguments> = async (
-  { timeout, noCompile },
-  hre,
-) => {
-  if (!noCompile) {
-    await hre.tasks.getTask("compile").run({ quiet: true });
-  }
+  console.log("\nRunning Solidity tests...\n");
 
   const artifacts = await getArtifacts(hre.artifacts);
   const testSuiteIds = (
@@ -43,7 +35,7 @@ const runSolidityTests: NewTaskActionFunction<TestActionArguments> = async (
 
   const runStream = run(artifacts, testSuiteIds, config, options);
 
-  const testReporterStream = runStream
+  runStream
     .on("data", (event: TestEvent) => {
       if (event.type === "suite:result") {
         if (event.data.testResults.some(({ status }) => status === "Failure")) {
@@ -51,21 +43,13 @@ const runSolidityTests: NewTaskActionFunction<TestActionArguments> = async (
         }
       }
     })
-    .compose(testReporter);
+    .compose(testReporter)
+    .pipe(process.stdout);
 
-  testReporterStream.pipe(process.stdout);
-
+  // NOTE: We're awaiting the original run stream to finish instead of the
+  // composed reporter stream to catch any errors produced by the runner.
   try {
-    // NOTE: We're awaiting the original run stream to finish to catch any
-    // errors produced by the runner.
     await finished(runStream);
-
-    // We also await the test reporter stream to finish to catch any error, and
-    // to avoid returning before the whole output was generated.
-    //
-    // NOTE: We don't await the restult of piping it to stdout, as that is
-    // ignored.
-    await finished(testReporterStream);
   } catch (error) {
     console.error(error);
     includesErrors = true;

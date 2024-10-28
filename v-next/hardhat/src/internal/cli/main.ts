@@ -38,18 +38,11 @@ import { getHelpString } from "./helpers/getHelpString.js";
 import { ensureTelemetryConsent } from "./telemetry/telemetry-permissions.js";
 import { printVersionMessage } from "./version.js";
 
-export interface MainOptions {
-  print?: (message: string) => void;
-  registerTsx?: true;
-  rethrowErrors?: true;
-}
-
 export async function main(
   cliArguments: string[],
-  options: MainOptions = {},
+  print: (message: string) => void = console.log,
+  registerTsx = false,
 ): Promise<void> {
-  const print = options.print ?? console.log;
-
   const log = debug("hardhat:core:cli:main");
 
   let builtinGlobalOptions;
@@ -87,7 +80,8 @@ export async function main(
 
     const projectRoot = await resolveProjectRoot(configPath);
 
-    if (options.registerTsx) {
+    // Register tsx
+    if (registerTsx) {
       register();
     }
 
@@ -172,10 +166,6 @@ export async function main(
     await task.run(taskArguments);
   } catch (error) {
     printErrorMessages(error, builtinGlobalOptions?.showStackTraces);
-
-    if (options.rethrowErrors) {
-      throw error;
-    }
   }
 }
 

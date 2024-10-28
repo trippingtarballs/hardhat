@@ -12,18 +12,10 @@ const hardhatPlugin: HardhatPlugin = {
       })
       .addFlag({
         name: "noCompile",
-        description: "Don't compile the project before running the script",
+        description: "Don't compile before running this task",
       })
       .setAction(import.meta.resolve("./task-action.js"))
       .build(),
-  ],
-  dependencies: [
-    async () => {
-      const { default: solidityBuiltinPlugin } = await import(
-        "../solidity/index.js"
-      );
-      return solidityBuiltinPlugin;
-    },
   ],
 };
 
