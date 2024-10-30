@@ -29,51 +29,48 @@ declare module "../../../../types/config.js" {
     accounts?: HttpNetworkAccountsUserConfig;
 
     // HTTP network specific
-    url: string;
+    url: SensitiveString;
     timeout?: number;
     httpHeaders?: Record<string, string>;
   }
 
   export type HttpNetworkAccountsUserConfig =
     | REMOTE
-    | string[]
+    | SensitiveString[]
     | HDAccountsUserConfig;
 
   export interface HDAccountsUserConfig {
-    mnemonic: string;
+    mnemonic: SensitiveString;
     initialIndex?: number;
     count?: number;
     path?: string;
-    passphrase?: string;
+    passphrase?: SensitiveString;
   }
 
   export type IntervalMiningConfig = number | [number, number];
 
   export type MempoolOrder = "fifo" | "priority";
 
-  export type HardforkHistoryConfig = Map<
-    /* hardforkName */ string,
-    /* blockNumber */ number
-  >;
+  /**
+   * Map<HardforkName, BlockNumber>
+   */
+  export type HardforkHistoryConfig = Map<string, number>;
 
   export interface HardhatNetworkChainConfig {
     hardforkHistory: HardforkHistoryConfig;
   }
 
+  /*
+   * Map<ChainId, HardhatNetworkChainConfig>
+   */
   export type HardhatNetworkChainsConfig = Map<
-    /* chainId */ number,
+    number,
     HardhatNetworkChainConfig
   >;
 
   export interface GenesisAccount {
     privateKey: string;
     balance: string | number | bigint;
-  }
-
-  export interface ForkConfig {
-    jsonRpcUrl: string;
-    blockNumber?: bigint;
-    httpHeaders?: Record<string, string>;
   }
 
   export interface EdrNetworkUserConfig {
@@ -106,9 +103,15 @@ declare module "../../../../types/config.js" {
     initialDate?: Date;
     coinbase?: string;
     // TODO: This isn't how it's called in v2
-    forkConfig?: ForkConfig;
+    forkConfig?: ForkUserConfig;
     // TODO: This isn't configurable in v2
     forkCachePath?: string;
+  }
+
+  export interface ForkUserConfig {
+    jsonRpcUrl: SensitiveString;
+    blockNumber?: bigint;
+    httpHeaders?: Record<string, string>;
   }
 
   export type EdrNetworkAccountsUserConfig =
@@ -116,17 +119,17 @@ declare module "../../../../types/config.js" {
     | EdrNetworkHDAccountsUserConfig;
 
   export interface EdrNetworkAccountUserConfig {
-    privateKey: string;
+    privateKey: SensitiveString;
     balance: string;
   }
 
   export interface EdrNetworkHDAccountsUserConfig {
-    mnemonic?: string;
+    mnemonic?: SensitiveString;
     initialIndex?: number;
     count?: number;
     path?: string;
     accountsBalance?: string;
-    passphrase?: string;
+    passphrase?: SensitiveString;
   }
 
   export type NetworkConfig = HttpNetworkConfig | EdrNetworkConfig;
@@ -144,7 +147,7 @@ declare module "../../../../types/config.js" {
     accounts: HttpNetworkAccountsConfig;
 
     // HTTP network specific
-    url: string;
+    url: ResolvedConfigurationVariable;
     timeout: number;
     httpHeaders: Record<string, string>;
   }
@@ -153,15 +156,15 @@ declare module "../../../../types/config.js" {
 
   export type HttpNetworkAccountsConfig =
     | REMOTE
-    | string[]
+    | ResolvedConfigurationVariable[]
     | HttpNetworkHDAccountsConfig;
 
   export interface HttpNetworkHDAccountsConfig {
-    mnemonic: string;
+    mnemonic: ResolvedConfigurationVariable;
     initialIndex: number;
     count: number;
     path: string;
-    passphrase: string;
+    passphrase: ResolvedConfigurationVariable;
   }
 
   export interface EdrNetworkConfig {
@@ -199,21 +202,27 @@ declare module "../../../../types/config.js" {
     forkCachePath: string;
   }
 
+  export interface ForkConfig {
+    jsonRpcUrl: ResolvedConfigurationVariable;
+    blockNumber?: bigint;
+    httpHeaders?: Record<string, string>;
+  }
+
   export type EdrNetworkAccountsConfig =
     | EdrNetworkHDAccountsConfig
     | EdrNetworkAccountConfig[];
 
   export interface EdrNetworkAccountConfig {
-    privateKey: string;
+    privateKey: ResolvedConfigurationVariable;
     balance: string;
   }
 
   export interface EdrNetworkHDAccountsConfig {
-    mnemonic: string;
+    mnemonic: ResolvedConfigurationVariable;
     initialIndex: number;
     count: number;
     path: string;
     accountsBalance: string;
-    passphrase: string;
+    passphrase: ResolvedConfigurationVariable;
   }
 }
