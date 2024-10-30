@@ -37,6 +37,14 @@ export interface ResolvedConfigurationVariable {
    * @throws an error if the value is not a valid BigInt.
    */
   getBigInt(): Promise<bigint>;
+
+  /**
+   * Returns the value of the configuration variable interpreted
+   * as a hexadecimal string.
+   *
+   * @throws an error if the value is not a valid hexadecimal string.
+   */
+  getHex(): Promise<`0x${string}`>;
 }
 
 /**

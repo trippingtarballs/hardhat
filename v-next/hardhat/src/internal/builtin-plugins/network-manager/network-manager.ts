@@ -177,7 +177,7 @@ export class NetworkManagerImplementation {
       }
 
       return HttpProvider.create({
-        url: resolvedNetworkConfig.url,
+        url: await resolvedNetworkConfig.url.getUrl(),
         networkName: resolvedNetworkName,
         extraHeaders: resolvedNetworkConfig.httpHeaders,
         timeout: resolvedNetworkConfig.timeout,

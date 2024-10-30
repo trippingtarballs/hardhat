@@ -17,6 +17,7 @@ import { expectTypeOf } from "expect-type";
 import { createHardhatRuntimeEnvironment } from "../../../../src/hre.js";
 import { NetworkManagerImplementation } from "../../../../src/internal/builtin-plugins/network-manager/network-manager.js";
 import { validateNetworkConfig } from "../../../../src/internal/builtin-plugins/network-manager/type-validation.js";
+import { MockResolvedConfigurationVariable } from "../../../utils.js";
 
 describe("NetworkManagerImplementation", () => {
   let hre: HardhatRuntimeEnvironment;
@@ -31,7 +32,7 @@ describe("NetworkManagerImplementation", () => {
       gasMultiplier: 1,
       gasPrice: "auto",
       accounts: [],
-      url: "http://localhost:8545",
+      url: new MockResolvedConfigurationVariable("http://localhost:8545"),
       timeout: 20_000,
       httpHeaders: {},
     },
@@ -44,7 +45,9 @@ describe("NetworkManagerImplementation", () => {
       gasMultiplier: 1,
       gasPrice: "auto",
       accounts: [],
-      url: "http://node.customNetwork.com",
+      url: new MockResolvedConfigurationVariable(
+        "http://node.customNetwork.com",
+      ),
       timeout: 20_000,
       httpHeaders: {},
     },
@@ -57,7 +60,7 @@ describe("NetworkManagerImplementation", () => {
       gasMultiplier: 1,
       gasPrice: "auto",
       accounts: [],
-      url: "http://node.myNetwork.com",
+      url: new MockResolvedConfigurationVariable("http://node.myNetwork.com"),
       timeout: 20_000,
       httpHeaders: {},
     },

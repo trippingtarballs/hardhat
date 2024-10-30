@@ -20,7 +20,7 @@ import type { ConfigHooks } from "../../../../types/hooks.js";
 import path from "node:path";
 
 import { HardhatError } from "@ignored/hardhat-vnext-errors";
-import { normalizeHexString } from "@ignored/hardhat-vnext-utils/hex";
+import { isObject } from "@ignored/hardhat-vnext-utils/lang";
 import { resolveFromRoot } from "@ignored/hardhat-vnext-utils/path";
 
 import { validateUserConfig } from "../type-validation.js";
@@ -211,8 +211,11 @@ export async function resolveUserConfig(
         gas: resolveGasConfig(networkConfig.gas),
         gasMultiplier: networkConfig.gasMultiplier ?? 1,
         gasPrice: resolveGasConfig(networkConfig.gasPrice),
-        accounts: resolveAccounts(networkConfig.accounts),
-        url: networkConfig.url,
+        accounts: resolveAccounts(
+          networkConfig.accounts,
+          resolveConfigurationVariable,
+        ),
+        url: resolveConfigurationVariable(networkConfig.url),
         timeout: networkConfig.timeout ?? 20_000,
         httpHeaders: networkConfig.httpHeaders ?? {},
       };
@@ -230,7 +233,15 @@ export async function resolveUserConfig(
         gasMultiplier: networkConfig.gasMultiplier ?? 1,
         gasPrice: resolveGasConfig(networkConfig.gasPrice),
         // TODO: This isn't how it's called in v2
-        forkConfig: networkConfig.forkConfig,
+        forkConfig:
+          networkConfig.forkConfig !== undefined
+            ? {
+                ...networkConfig.forkConfig,
+                jsonRpcUrl: resolveConfigurationVariable(
+                  networkConfig.forkConfig.jsonRpcUrl,
+                ),
+              }
+            : undefined,
         forkCachePath:
           networkConfig.forkCachePath !== undefined
             ? resolveFromRoot(
@@ -278,28 +289,34 @@ function resolveGasConfig(value: GasUserConfig = "auto"): GasConfig {
 
 function resolveAccounts(
   accounts: HttpNetworkAccountsUserConfig | undefined,
+  resolveConfigurationVariable: (
+    variableOrString: ConfigurationVariable | string,
+  ) => ResolvedConfigurationVariable,
 ): HttpNetworkAccountsConfig {
   const defaultHdAccountsConfigParams = {
     initialIndex: 0,
     count: 20,
     path: "m/44'/60'/0'/0",
-    passphrase: "",
   };
 
-  return accounts === undefined
-    ? "remote"
-    : isHdAccountsConfig(accounts)
-      ? {
-          ...defaultHdAccountsConfigParams,
-          ...accounts,
-        }
-      : Array.isArray(accounts)
-        ? accounts.map(normalizeHexString)
-        : "remote";
+  if (isHdAccountsConfig(accounts)) {
+    return {
+      ...defaultHdAccountsConfigParams,
+      ...accounts,
+      mnemonic: resolveConfigurationVariable(accounts.mnemonic),
+      passphrase: resolveConfigurationVariable(accounts.passphrase ?? ""),
+    };
+  }
+
+  if (Array.isArray(accounts)) {
+    return accounts.map(resolveConfigurationVariable);
+  }
+
+  return "remote";
 }
 
 function isHdAccountsConfig(
-  accounts: HttpNetworkAccountsUserConfig,
+  accounts: unknown,
 ): accounts is HDAccountsUserConfig {
-  return typeof accounts === "object" && !Array.isArray(accounts);
+  return isObject(accounts);
 }

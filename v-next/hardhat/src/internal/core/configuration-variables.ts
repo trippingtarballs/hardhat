@@ -5,6 +5,7 @@ import type {
 import type { HookManager } from "../../types/hooks.js";
 
 import { HardhatError } from "@ignored/hardhat-vnext-errors";
+import { normalizeHexString } from "@ignored/hardhat-vnext-utils/hex";
 
 export class ResolvedConfigurationVariableImplementation
   implements ResolvedConfigurationVariable
@@ -68,6 +69,18 @@ export class ResolvedConfigurationVariableImplementation
       return BigInt(value);
     } catch (e) {
       throw new HardhatError(HardhatError.ERRORS.GENERAL.INVALID_BIGINT, {
+        value,
+      });
+    }
+  }
+
+  public async getHex(): Promise<`0x${string}`> {
+    const value = await this.get();
+
+    try {
+      return normalizeHexString(value);
+    } catch (e) {
+      throw new HardhatError(HardhatError.ERRORS.GENERAL.INVALID_HEX_STRING, {
         value,
       });
     }

@@ -1,3 +1,4 @@
+import type { ResolvedConfigurationVariable } from "../src/types/config.js";
 import type { Interceptable } from "@ignored/hardhat-vnext-utils/request";
 
 import { after, afterEach, before } from "node:test";
@@ -57,3 +58,44 @@ export const initializeTestDispatcher = async (
 
   return interceptor;
 };
+
+/**
+ * This class is a mock implementation of `ResolvedConfigurationVariable`.
+ * It doesn't actually resolve the variable, it just returns the value it was
+ * constructed with.
+ */
+export class MockResolvedConfigurationVariable
+  implements ResolvedConfigurationVariable
+{
+  public _type: "ResolvedConfigurationVariable" =
+    "ResolvedConfigurationVariable";
+  readonly #variable: unknown;
+
+  constructor(variable: unknown) {
+    this.#variable = variable;
+  }
+
+  public async get(): Promise<string> {
+    /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    -- We assume that the variable is a string */
+    return this.#variable as string;
+  }
+
+  public async getUrl(): Promise<string> {
+    /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    -- We assume that the variable is a valid url */
+    return this.#variable as string;
+  }
+
+  public async getBigInt(): Promise<bigint> {
+    /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    -- We assume that the variable is a valid bigint */
+    return this.#variable as bigint;
+  }
+
+  public async getHex(): Promise<`0x${string}`> {
+    /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    -- We assume that the variable is a valid hex string */
+    return this.#variable as `0x${string}`;
+  }
+}

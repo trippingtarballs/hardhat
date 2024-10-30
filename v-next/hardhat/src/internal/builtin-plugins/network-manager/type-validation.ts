@@ -8,6 +8,8 @@ import { getUnprefixedHexString } from "@ignored/hardhat-vnext-utils/hex";
 import { isObject } from "@ignored/hardhat-vnext-utils/lang";
 import {
   conditionalUnionType,
+  configurationVariableSchema,
+  sensitiveStringSchema,
   sensitiveUrlSchema,
   unionType,
   validateUserConfigZodType,
@@ -37,17 +39,25 @@ const userGasSchema = conditionalUnionType(
   "Expected 'auto', a safe int, or bigint",
 );
 
-const accountsPrivateKeySchema = z
-  .string({
-    message: `${ACCOUNTS_ERROR} the private key must be a string`,
-  })
-  .refine((val) => getUnprefixedHexString(val).length === 64, {
-    message: `${ACCOUNTS_ERROR} the private key must be exactly 32 bytes long`,
-  })
-  .refine((val) => /^[0-9a-fA-F]+$/.test(getUnprefixedHexString(val)), {
-    message: `${ACCOUNTS_ERROR} the private key must contain only valid hexadecimal characters`,
-  });
-
+const accountsPrivateKeySchema = conditionalUnionType(
+  [
+    [
+      (data) => typeof data === "string",
+      z
+        .string({
+          message: `${ACCOUNTS_ERROR} the private key must be a string`,
+        })
+        .refine((val) => getUnprefixedHexString(val).length === 64, {
+          message: `${ACCOUNTS_ERROR} the private key must be exactly 32 bytes long`,
+        })
+        .refine((val) => /^[0-9a-fA-F]+$/.test(getUnprefixedHexString(val)), {
+          message: `${ACCOUNTS_ERROR} the private key must contain only valid hexadecimal characters`,
+        }),
+    ],
+    [isObject, configurationVariableSchema],
+  ],
+  "Excpected a private key or a Configuration Variable",
+);
 const canBeValidatedAsPrivateKey = (val: unknown) => {
   // Allow numbers (hex literals) even if unsupported, to provide a more detailed error message about the private key
   return typeof val === "string" || typeof val === "number";
@@ -70,9 +80,7 @@ const canBeValidatedAsHdAccount = (val: unknown) => {
 };
 
 const httpNetworkHDAccountsUserConfig = z.object({
-  mnemonic: z.string({
-    message: HD_ACCOUNT_MNEMONIC_MSG,
-  }),
+  mnemonic: sensitiveStringSchema,
   initialIndex: z.optional(
     z
       .number({
@@ -93,11 +101,7 @@ const httpNetworkHDAccountsUserConfig = z.object({
       message: HD_ACCOUNT_PATH_MSG,
     }),
   ),
-  passphrase: z.optional(
-    z.string({
-      message: HD_ACCOUNT_PASSPHRASE_MSG,
-    }),
-  ),
+  passphrase: sensitiveStringSchema.optional(),
 });
 
 const httpNetworkUserConfigAccountsSchema = conditionalUnionType(
@@ -138,11 +142,7 @@ const canBeValidatedAsEdrKeyAndBalance = (item: unknown) => {
 };
 
 const edrNetworkHDAccountsUserConfig = z.object({
-  mnemonic: z.optional(
-    z.string({
-      message: HD_ACCOUNT_MNEMONIC_MSG,
-    }),
-  ),
+  mnemonic: sensitiveStringSchema,
   initialIndex: z.optional(
     z
       .number({
@@ -172,11 +172,7 @@ const edrNetworkHDAccountsUserConfig = z.object({
       message: HD_ACCOUNT_BALANCE_MSG,
     }),
   ),
-  passphrase: z.optional(
-    z.string({
-      message: HD_ACCOUNT_PASSPHRASE_MSG,
-    }),
-  ),
+  passphrase: sensitiveStringSchema.optional(),
 });
 
 const edrNetworkUserConfigAccountsSchema = conditionalUnionType(

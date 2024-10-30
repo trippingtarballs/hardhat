@@ -14,6 +14,7 @@ import {
 } from "../../../../../src/internal/builtin-plugins/network-manager/hook-handlers/config.js";
 import { validateUserConfig } from "../../../../../src/internal/builtin-plugins/network-manager/type-validation.js";
 import { ResolvedConfigurationVariableImplementation } from "../../../../../src/internal/core/configuration-variables.js";
+import { MockResolvedConfigurationVariable } from "../../../../utils.js";
 
 describe("network-manager/hook-handlers/config", () => {
   describe("extendUserConfig", () => {
@@ -1055,10 +1056,7 @@ describe("network-manager/hook-handlers/config", () => {
         },
       };
       const resolveConfigurationVariable = () =>
-        new ResolvedConfigurationVariableImplementation(hre.hooks, {
-          name: "foo",
-          _type: "ConfigurationVariable",
-        });
+        new MockResolvedConfigurationVariable("");
       const next = async (
         nextUserConfig: HardhatUserConfig,
         /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -1083,7 +1081,7 @@ describe("network-manager/hook-handlers/config", () => {
           gasMultiplier: 1,
           gasPrice: "auto",
           accounts: "remote",
-          url: "http://localhost:8545",
+          url: new MockResolvedConfigurationVariable("http://localhost:8545"),
           timeout: 20_000,
           httpHeaders: {},
         },
@@ -1115,10 +1113,7 @@ describe("network-manager/hook-handlers/config", () => {
         },
       };
       const resolveConfigurationVariable = () =>
-        new ResolvedConfigurationVariableImplementation(hre.hooks, {
-          name: "foo",
-          _type: "ConfigurationVariable",
-        });
+        new MockResolvedConfigurationVariable("");
       const next = async (
         nextUserConfig: HardhatUserConfig,
         /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -1142,8 +1137,14 @@ describe("network-manager/hook-handlers/config", () => {
           gas: "auto",
           gasMultiplier: 1.5,
           gasPrice: 100n,
-          accounts: ["0x000006d4548a3ac17d72b372ae1e416bf65b8ead"],
-          url: "http://node.myNetwork.com",
+          accounts: [
+            new MockResolvedConfigurationVariable(
+              "0x000006d4548a3ac17d72b372ae1e416bf65b8ead",
+            ),
+          ],
+          url: new MockResolvedConfigurationVariable(
+            "http://node.myNetwork.com",
+          ),
           timeout: 10_000,
           httpHeaders: {
             "Content-Type": "application/json",
@@ -1179,10 +1180,7 @@ describe("network-manager/hook-handlers/config", () => {
           },
         };
         const resolveConfigurationVariable = () =>
-          new ResolvedConfigurationVariableImplementation(hre.hooks, {
-            name: "foo",
-            _type: "ConfigurationVariable",
-          });
+          new MockResolvedConfigurationVariable("");
         const next = async (
           nextUserConfig: HardhatUserConfig,
           /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -1205,12 +1203,22 @@ describe("network-manager/hook-handlers/config", () => {
             gasMultiplier: 1.5,
             gasPrice: 100n,
             accounts: [
-              "0x000006d4548a3ac17d72b372ae1e416bf65b8aaa",
-              "0x000006d4548a3ac17d72b372ae1e416bf65b8bbb",
-              "0x000006d4548a3ac17d72b372ae1e416bf65b8ccc",
-              "0x000006d4548a3ac17d72b372ae1e416bf65b8ddd",
+              new MockResolvedConfigurationVariable(
+                "0x000006d4548a3ac17d72b372ae1e416bf65b8aaa",
+              ),
+              new MockResolvedConfigurationVariable(
+                "0x000006d4548a3ac17d72b372ae1e416bf65b8bbb",
+              ),
+              new MockResolvedConfigurationVariable(
+                "0x000006d4548a3ac17d72b372ae1e416bf65b8ccc",
+              ),
+              new MockResolvedConfigurationVariable(
+                "0x000006d4548a3ac17d72b372ae1e416bf65b8ddd",
+              ),
             ],
-            url: "http://node.myNetwork.com",
+            url: new MockResolvedConfigurationVariable(
+              "http://node.myNetwork.com",
+            ),
             timeout: 10_000,
             httpHeaders: {
               "Content-Type": "application/json",
@@ -1243,10 +1251,7 @@ describe("network-manager/hook-handlers/config", () => {
           },
         };
         const resolveConfigurationVariable = () =>
-          new ResolvedConfigurationVariableImplementation(hre.hooks, {
-            name: "foo",
-            _type: "ConfigurationVariable",
-          });
+          new MockResolvedConfigurationVariable("");
         const next = async (
           nextUserConfig: HardhatUserConfig,
           /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -1269,13 +1274,15 @@ describe("network-manager/hook-handlers/config", () => {
             gasMultiplier: 1.5,
             gasPrice: 100n,
             accounts: {
-              mnemonic: "asd asd asd",
+              mnemonic: new MockResolvedConfigurationVariable("asd asd asd"),
               initialIndex: 0,
               count: 20,
               path: "m/44'/60'/0'/0",
-              passphrase: "passphrase",
+              passphrase: new MockResolvedConfigurationVariable("passphrase"),
             },
-            url: "http://node.myNetwork.com",
+            url: new MockResolvedConfigurationVariable(
+              "http://node.myNetwork.com",
+            ),
             timeout: 10_000,
             httpHeaders: {
               "Content-Type": "application/json",

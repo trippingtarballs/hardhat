@@ -133,7 +133,7 @@ export class EdrProvider extends EventEmitter implements EthereumProvider {
       }
 
       fork = {
-        jsonRpcUrl: config.forkConfig.jsonRpcUrl,
+        jsonRpcUrl: await config.forkConfig.jsonRpcUrl.getUrl(),
         blockNumber:
           config.forkConfig.blockNumber !== undefined
             ? BigInt(config.forkConfig.blockNumber)

@@ -6,14 +6,14 @@ import { before, describe, it } from "node:test";
 import { HardhatError } from "@ignored/hardhat-vnext-errors";
 import { assertRejectsWithHardhatError } from "@nomicfoundation/hardhat-test-utils";
 
+import { createHardhatRuntimeEnvironment } from "../../../../src/hre.js";
 import { ResolvedConfigurationVariableImplementation } from "../../../../src/internal/core/configuration-variables.js";
-import { HardhatRuntimeEnvironmentImplementation } from "../../../../src/internal/core/hre.js";
 
 describe("ResolvedConfigurationVariable", () => {
   let hre: HardhatRuntimeEnvironment;
 
   before(async () => {
-    hre = await HardhatRuntimeEnvironmentImplementation.create({}, {});
+    hre = await createHardhatRuntimeEnvironment({});
   });
 
   it("should return the value of a string variable", async () => {
@@ -126,6 +126,38 @@ describe("ResolvedConfigurationVariable", () => {
       HardhatError.ERRORS.GENERAL.INVALID_BIGINT,
       {
         value: "not a bigint",
+      },
+    );
+
+    delete process.env.foo;
+  });
+
+  it("should return the value of a configuration variable as a hexadecimal string", async () => {
+    const variable = new ResolvedConfigurationVariableImplementation(
+      hre.hooks,
+      { name: "foo", _type: "ConfigurationVariable" },
+    );
+
+    process.env.foo = "0x42";
+
+    assert.equal(await variable.getHex(), "0x42");
+
+    delete process.env.foo;
+  });
+
+  it("should throw if the configuration variable is not a valid hexadecimal string", async () => {
+    const variable = new ResolvedConfigurationVariableImplementation(
+      hre.hooks,
+      { name: "foo", _type: "ConfigurationVariable" },
+    );
+
+    process.env.foo = "not a hex";
+
+    await assertRejectsWithHardhatError(
+      variable.getHex(),
+      HardhatError.ERRORS.GENERAL.INVALID_HEX_STRING,
+      {
+        value: "not a hex",
       },
     );
 

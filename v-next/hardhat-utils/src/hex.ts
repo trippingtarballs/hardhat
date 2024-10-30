@@ -123,7 +123,7 @@ export function hexStringToBytes(hexString: string): Uint8Array {
 }
 
 /**
- * Normalizes and validates a string that represents a hexadecimal number.
+ * Normalizes and validates a hexadecimal string.
  * The normalization process includes trimming any leading or trailing
  * whitespace, converting all characters to lowercase, and ensuring the string
  * has a "0x" prefix. The validation process checks if the string is a valid
