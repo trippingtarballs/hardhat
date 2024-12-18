@@ -11,9 +11,9 @@ import type { RpcDebugTraceOutput, RpcStructLog } from "../types/output.js";
 import type {
   IntervalRange,
   DebugTraceResult,
-  GenesisAccount,
   ChainConfig,
   ForkConfig,
+  OwnedAccount,
 } from "@ignored/edr-optimism";
 
 import {
@@ -220,9 +220,9 @@ export function edrRpcDebugTraceToHardhat(
   };
 }
 
-export function hardhatAccountsToEdrGenesisAccounts(
+export function hardhatAccountsToEdrOwnedAccounts(
   accounts: EdrNetworkAccountsConfig,
-): GenesisAccount[] {
+): OwnedAccount[] {
   const normalizedAccounts = normalizeEdrNetworkAccountsConfig(accounts);
 
   return normalizedAccounts.map((account) => {

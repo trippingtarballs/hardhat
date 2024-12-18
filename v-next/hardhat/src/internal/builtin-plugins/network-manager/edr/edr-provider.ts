@@ -43,6 +43,10 @@ import {
   OPTIMISM_CHAIN_TYPE,
   genericChainProviderFactory,
   optimismProviderFactory,
+  optimismGenesisState,
+  optimismHardforkFromString,
+  l1GenesisState,
+  l1HardforkFromString,
 } from "@ignored/edr-optimism";
 import { toSeconds } from "@ignored/hardhat-vnext-utils/date";
 import { ensureError } from "@ignored/hardhat-vnext-utils/error";
@@ -70,11 +74,12 @@ import {
   hardhatMiningIntervalToEdrMiningInterval,
   hardhatMempoolOrderToEdrMineOrdering,
   hardhatHardforkToEdrSpecId,
-  hardhatAccountsToEdrGenesisAccounts,
+  hardhatAccountsToEdrOwnedAccounts,
   hardhatChainsToEdrChains,
   hardhatForkingConfigToEdrForkConfig,
 } from "./utils/convert-to-edr.js";
 import { printLine, replaceLastLine } from "./utils/logger.js";
+import { getHardforkName } from "./utils/hardfork.js";
 
 const log = debug("hardhat:core:hardhat-network:provider");
 
@@ -538,6 +543,22 @@ export class EdrProvider extends EventEmitter implements EthereumProvider {
 }
 
 function getProviderConfig(networkConfig: EdrNetworkConfig): ProviderConfig {
+  const genesisState =
+    networkConfig.forking !== undefined
+      ? [] // TODO: Add support for overriding remote fork state when the local fork is different
+      : networkConfig.chainType === "optimism"
+        ? optimismGenesisState(
+            optimismHardforkFromString(
+              // TODO: Optimism conversion is not implemented yet
+              hardhatHardforkToEdrSpecId(networkConfig.hardfork),
+            ),
+          )
+        : l1GenesisState(
+            l1HardforkFromString(
+              hardhatHardforkToEdrSpecId(networkConfig.hardfork),
+            ),
+          );
+
   return {
     allowBlocksWithSameTimestamp: networkConfig.allowBlocksWithSameTimestamp,
     allowUnlimitedContractSize: networkConfig.allowUnlimitedContractSize,
@@ -551,9 +572,7 @@ function getProviderConfig(networkConfig: EdrNetworkConfig): ProviderConfig {
     coinbase: Buffer.from(networkConfig.coinbase),
     enableRip7212: networkConfig.enableRip7212,
     fork: hardhatForkingConfigToEdrForkConfig(networkConfig.forking),
-    genesisAccounts: hardhatAccountsToEdrGenesisAccounts(
-      networkConfig.accounts,
-    ),
+    genesisState,
     hardfork: hardhatHardforkToEdrSpecId(networkConfig.hardfork),
     initialBaseFeePerGas: networkConfig.initialBaseFeePerGas,
     initialDate: BigInt(toSeconds(networkConfig.initialDate)),
@@ -570,5 +589,6 @@ function getProviderConfig(networkConfig: EdrNetworkConfig): ProviderConfig {
       },
     },
     networkId: BigInt(networkConfig.networkId),
+    ownedAccounts: hardhatAccountsToEdrOwnedAccounts(networkConfig.accounts),
   };
 }
