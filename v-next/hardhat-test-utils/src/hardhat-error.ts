@@ -25,7 +25,7 @@ export function assertIsHardhatError<ErrorDescriptorT extends ErrorDescriptor>(
   assert.equal(
     error.descriptor.number,
     descriptor.number,
-    `Expected error number ${descriptor.number}, but got ${error.descriptor.number}`,
+    error,
   );
 
   assert.deepEqual(error.descriptor, descriptor);

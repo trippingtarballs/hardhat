@@ -15,7 +15,7 @@ import {
   CompilerPlatform,
 } from "../../../../../../src/internal/builtin-plugins/solidity/build-system/compiler/downloader.js";
 
-describe(
+describe.only(
   "Compiler downloader",
   {
     skip: process.env.HARDHAT_DISABLE_SLOW_TESTS === "true",
