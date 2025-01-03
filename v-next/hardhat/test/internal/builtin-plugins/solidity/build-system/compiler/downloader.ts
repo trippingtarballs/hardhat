@@ -435,7 +435,7 @@ describe.only(
 
         await mockDownloader.updateCompilerListIfNeeded(new Set(["0.4.12"]));
 
-        assertRejectsWithHardhatError(
+        await assertRejectsWithHardhatError(
           () => mockDownloader.downloadCompiler("0.4.12"),
           HardhatError.ERRORS.SOLIDITY.INVALID_DOWNLOAD,
           {
