@@ -14,7 +14,9 @@ async function readStream(
 }
 
 async function getSolcJs(solcJsPath: string) {
-  const { default: solcWrapper } = await import("./solcjs-wrapper.js");
+  /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions --
+  We cast to string because it doesn't have types, and otherwise TS complains */
+  const { default: solcWrapper } = await import("solc/wrapper.js" as string);
   const { default: solc } = await import(solcJsPath);
 
   return solcWrapper(solc);
@@ -26,8 +28,7 @@ async function main() {
   const solcjsPath = process.argv[2];
   const solc = await getSolcJs(solcjsPath);
 
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the input read from the stdin should be a string
-  const output = solc.compile(input as string);
+  const output = solc.compile(input);
 
   console.log(output);
 }
