@@ -1,7 +1,6 @@
 // This wrapper was created by extracting the parts of the solc-js package
 // (https://github.com/ethereum/solc-js) that we need to perform compilation.
 
-import { HardhatError } from "@ignored/hardhat-vnext-errors";
 import * as semver from "semver";
 
 interface Solc {
@@ -41,11 +40,9 @@ export default function wrapper(solc: Solc): SolcWrapper {
   const compile = bindCompile(solc, isVersion6OrNewer);
 
   if (compile === undefined) {
-    throw new HardhatError(
-      HardhatError.ERRORS.SOLIDITY.INVALID_SOLCJS_COMPILER,
-      {
-        version: version(),
-      },
+    // eslint-disable-next-line no-restricted-syntax -- should we use a HardhatError here?
+    throw new Error(
+      'Could not find the "compile" function in the solc library',
     );
   }
 
