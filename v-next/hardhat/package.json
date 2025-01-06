@@ -97,6 +97,7 @@
     "ethereum-cryptography": "^2.2.1",
     "micro-eth-signer": "^0.13.0",
     "p-map": "^7.0.2",
+    "resolve.exports": "^2.0.3",
     "semver": "^7.6.3",
     "solc": "^0.8.27",
     "tsx": "^4.11.0",

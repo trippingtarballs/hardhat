@@ -23,7 +23,6 @@ import {
 } from "@ignored/hardhat-vnext-utils/fs";
 import { findClosestPackageJson } from "@ignored/hardhat-vnext-utils/package";
 import { shortenPath } from "@ignored/hardhat-vnext-utils/path";
-import { ResolutionError, resolve } from "@ignored/hardhat-vnext-utils/resolve";
 import { analyze } from "@nomicfoundation/solidity-analyzer";
 
 import { ResolvedFileType } from "../../../../../types/solidity/resolved-file.js";
@@ -34,6 +33,11 @@ import {
   parseRemappingString,
   selectBestRemapping,
 } from "./remappings.js";
+import { createRequire } from "node:module";
+
+import fs from "fs";
+
+import * as resolve from "resolve.exports";
 
 // Things to note:
 //  - This resolver assumes that the root of the project is the folder with the
@@ -1080,28 +1084,54 @@ export class ResolverImplementation implements Resolver {
     // We also need to figure out a way to test this inside the monorepo,
     // without the package `hardhat` in the top-level `node_modules` folder
     // interfering with the resolution.
-    const packageJsonResolution =
+    // const packageJsonResolution =
+    //   packageName === "hardhat"
+    //     ? ({
+    //         success: true,
+    //         absolutePath: await findClosestPackageJson(import.meta.dirname),
+    //       } as const)
+    //     : resolve(packageName + "/package.json", baseResolutionDirectory);
+
+    const packageJsonPath =
       packageName === "hardhat"
-        ? ({
-            success: true,
-            absolutePath: await findClosestPackageJson(import.meta.dirname),
-          } as const)
-        : resolve(packageName + "/package.json", baseResolutionDirectory);
+        ? await findClosestPackageJson(import.meta.dirname)
+        : await findPackageJson(baseResolutionDirectory, packageName);
 
-    if (packageJsonResolution.success === false) {
-      if (packageJsonResolution.error === ResolutionError.MODULE_NOT_FOUND) {
-        throw new HardhatError(
-          HardhatError.ERRORS.SOLIDITY.NPM_DEPEDNDENCY_NOT_INSTALLED,
-          {
-            from:
-              from === PROJECT_ROOT_SENTINEL
-                ? "your project"
-                : `"${shortenPath(from.rootFsPath)}"`,
-            packageName,
-          },
-        );
-      }
+    if (packageJsonPath === undefined) {
+      throw new HardhatError(
+        HardhatError.ERRORS.SOLIDITY.NPM_DEPEDNDENCY_NOT_INSTALLED,
+        {
+          from:
+            from === PROJECT_ROOT_SENTINEL
+              ? "your project"
+              : `"${shortenPath(from.rootFsPath)}"`,
+          packageName,
+        },
+      );
+    }
 
+    // const packageJsonPath = packageJsonResolution.absolutePath;
+
+    if (isPackageJsonFromProject(packageJsonPath, this.#projectRoot)) {
+      dependenciesMap.set(packageName, PROJECT_ROOT_SENTINEL);
+      return PROJECT_ROOT_SENTINEL;
+    }
+
+    const packageJson = await readJsonFile<{
+      name: string;
+      version: string;
+      exports?: resolve.Exports;
+    }>(packageJsonPath);
+
+    const name = packageJson.name;
+    const version = isPackageJsonFromMonorepo(
+      packageJsonPath,
+      this.#projectRoot,
+    )
+      ? "local"
+      : packageJson.version;
+
+    if (packageJson.exports !== undefined && packageName !== "hardhat") {
       throw new HardhatError(
         HardhatError.ERRORS.SOLIDITY.NPM_DEPEDNDENCY_USES_EXPORTS,
         {
@@ -1114,28 +1144,10 @@ export class ResolverImplementation implements Resolver {
       );
     }
 
-    const packageJsonPath = packageJsonResolution.absolutePath;
-
-    if (isPackageJsonFromProject(packageJsonPath, this.#projectRoot)) {
-      dependenciesMap.set(packageName, PROJECT_ROOT_SENTINEL);
-      return PROJECT_ROOT_SENTINEL;
-    }
-
-    const packageJson = await readJsonFile<{ name: string; version: string }>(
-      packageJsonPath,
-    );
-
-    const name = packageJson.name;
-    const version = isPackageJsonFromMonorepo(
-      packageJsonPath,
-      this.#projectRoot,
-    )
-      ? "local"
-      : packageJson.version;
-
     const npmPackage: ResolvedNpmPackage = {
       name,
       version,
+      exports: packageJson.exports,
       rootFsPath: path.dirname(packageJsonPath),
       rootSourceName: npmPackageToRootSourceName(name, version),
     };
@@ -1372,29 +1384,40 @@ async function validateAndResolveUserRemapping(
 
   const { packageName, packageVersion } = parsed;
 
-  const dependencyPackageJsonResolution = resolve(
-    `${packageName}/package.json`,
+  // const dependencyPackageJsonResolution = resolve(
+  //   `${packageName}/package.json`,
+  //   projectRoot,
+  // );
+
+  // if (dependencyPackageJsonResolution.success === false) {
+  //   if (
+  //     dependencyPackageJsonResolution.error === ResolutionError.MODULE_NOT_FOUND
+  //   ) {
+  //     throw new HardhatError(
+  //       HardhatError.ERRORS.SOLIDITY.REMAPPING_TO_UNINSTALLED_PACKAGE,
+  //       { remapping: remappingString, package: packageName },
+  //     );
+  //   }
+
+  //   throw new HardhatError(
+  //     HardhatError.ERRORS.SOLIDITY.REMAPPING_TO_PACKAGE_USING_EXPORTS,
+  //     { remapping: remappingString, package: packageName },
+  //   );
+  // }
+
+  // const dependencyPackageJsonPath =
+  //   dependencyPackageJsonResolution.absolutePath;
+  const dependencyPackageJsonPath = await findPackageJson(
     projectRoot,
+    packageName,
   );
 
-  if (dependencyPackageJsonResolution.success === false) {
-    if (
-      dependencyPackageJsonResolution.error === ResolutionError.MODULE_NOT_FOUND
-    ) {
-      throw new HardhatError(
-        HardhatError.ERRORS.SOLIDITY.REMAPPING_TO_UNINSTALLED_PACKAGE,
-        { remapping: remappingString, package: packageName },
-      );
-    }
-
+  if (dependencyPackageJsonPath === undefined) {
     throw new HardhatError(
-      HardhatError.ERRORS.SOLIDITY.REMAPPING_TO_PACKAGE_USING_EXPORTS,
+      HardhatError.ERRORS.SOLIDITY.REMAPPING_TO_UNINSTALLED_PACKAGE,
       { remapping: remappingString, package: packageName },
     );
   }
-
-  const dependencyPackageJsonPath =
-    dependencyPackageJsonResolution.absolutePath;
 
   if (isPackageJsonFromMonorepo(dependencyPackageJsonPath, projectRoot)) {
     if (packageVersion !== "local") {
@@ -1553,4 +1576,33 @@ async function readFileContent(absolutePath: string): Promise<FileContent> {
     importPaths: imports,
     versionPragmas,
   };
+}
+
+// Return the absolute real path (resolved symlinks) of the package json for a given package
+async function findPackageJson(
+  from: string,
+  packageName: string,
+): Promise<string | undefined> {
+  console.log({ from, packageName });
+
+  const require = createRequire(ensureTrailingSlash(from));
+
+  const lookupPaths = require.resolve.paths(packageName) ?? [];
+
+  const pathToTest = [...packageName.split("/"), "package.json"];
+
+  for (const lookupPath of lookupPaths) {
+    const packageJsonPath = path.join(lookupPath, ...pathToTest);
+
+    try {
+      await fs.promises.access(packageJsonPath, fs.constants.R_OK);
+      return fs.promises.realpath(packageJsonPath);
+    } catch (error) {
+      continue;
+    }
+  }
+}
+
+function ensureTrailingSlash(path: string): string {
+  return path.endsWith("/") ? path : path + "/";
 }
