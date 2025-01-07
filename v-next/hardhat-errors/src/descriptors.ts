@@ -1189,6 +1189,19 @@ This happens when your files require incompatible versions of solc or you haven'
 
 Please check Hardhat's output for more details.`,
     },
+    RESOLVE_NOT_EXPORTED_NPM_FILE: {
+      number: 1231,
+      messageTemplate: `You are tying to resolve the npm file "{module}", but it's not exported by its package`,
+      websiteTitle: "Resolution of not-exported npm file",
+      websiteDescription: `You are tying to resolve an npm file that is not exported by its package.`,
+    },
+    // IMPORTED_FILE_NOT_EXPORTED: {
+    //   number: 1232,
+    //   messageTemplate:
+    //     'The import "{importPath} from "{from}" is not exported from its package.',
+    //   websiteTitle: "Imported file is not exported",
+    //   websiteDescription: `An imported file is not exported by its package, which uses npm exports.`,
+    // },
   },
   VIEM: {
     NETWORK_NOT_FOUND: {

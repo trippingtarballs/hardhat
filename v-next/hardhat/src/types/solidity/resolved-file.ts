@@ -1,4 +1,4 @@
-import { Exports } from "resolve.exports";
+import type { Exports } from "resolve.exports";
 
 /**
  * The representation of an npm package.

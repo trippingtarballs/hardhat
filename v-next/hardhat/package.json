@@ -32,7 +32,8 @@
     "./types/tasks": "./dist/src/types/tasks.js",
     "./types/user-interruptions": "./dist/src/types/user-interruptions.js",
     "./types/utils": "./dist/src/types/utils.js",
-    "./types/solidity": "./dist/src/types/solidity.js"
+    "./types/solidity": "./dist/src/types/solidity.js",
+    "./console.sol": "./console.sol"
   },
   "keywords": [
     "ethereum",
