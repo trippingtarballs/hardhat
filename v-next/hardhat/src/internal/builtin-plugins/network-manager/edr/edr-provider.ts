@@ -14,17 +14,10 @@ import type {
   RequestArguments,
   SuccessfulJsonRpcResponse,
 } from "../../../../types/providers.js";
-import type {
-  CompilerInput,
-  CompilerOutput,
-} from "../../../../types/solidity/compiler-io.js";
 import type { JsonRpcRequestWrapperFunction } from "../network-manager.js";
 import type {
-  RawTrace,
   SubscriptionEvent,
   Response,
-  VmTraceDecoder,
-  VMTracer as VMTracerT,
   Provider,
   DebugTraceResult,
   ProviderConfig,
@@ -35,10 +28,6 @@ import util from "node:util";
 
 import {
   EdrContext,
-  createModelsAndDecodeBytecodes,
-  initializeVmTraceDecoder,
-  SolidityTracer,
-  VmTracer,
   GENERIC_CHAIN_TYPE,
   OPTIMISM_CHAIN_TYPE,
   genericChainProviderFactory,
@@ -50,7 +39,6 @@ import {
 } from "@ignored/edr-optimism";
 import { toSeconds } from "@ignored/hardhat-vnext-utils/date";
 import { ensureError } from "@ignored/hardhat-vnext-utils/error";
-import chalk from "chalk";
 import debug from "debug";
 
 import {
@@ -66,7 +54,6 @@ import {
   ProviderError,
 } from "./errors.js";
 import { encodeSolidityStackTrace } from "./stack-traces/stack-trace-solidity-errors.js";
-import { createVmTraceDecoder } from "./stack-traces/stack-traces.js";
 import { clientVersion } from "./utils/client-version.js";
 import { ConsoleLogger } from "./utils/console-logger.js";
 import {
@@ -79,7 +66,6 @@ import {
   hardhatForkingConfigToEdrForkConfig,
 } from "./utils/convert-to-edr.js";
 import { printLine, replaceLastLine } from "./utils/logger.js";
-import { getHardforkName } from "./utils/hardfork.js";
 
 const log = debug("hardhat:core:hardhat-network:provider");
 
@@ -124,12 +110,9 @@ interface EdrProviderConfig {
 
 export class EdrProvider extends EventEmitter implements EthereumProvider {
   readonly #provider: Provider;
-  readonly #vmTraceDecoder: VmTraceDecoder;
   readonly #jsonRpcRequestWrapper?: JsonRpcRequestWrapperFunction;
 
   #failedStackTraces: number = 0;
-  /** Used for internal stack trace tests. */
-  #vmTracer?: VMTracerT;
   #nextRequestId = 1;
 
   /**
@@ -144,8 +127,6 @@ export class EdrProvider extends EventEmitter implements EthereumProvider {
     const printLineFn = loggerConfig.printLineFn ?? printLine;
     const replaceLastLineFn = loggerConfig.replaceLastLineFn ?? replaceLastLine;
 
-    const vmTraceDecoder = await createVmTraceDecoder();
-
     const context = await getGlobalEdrContext();
     const provider = await context.createProvider(
       networkConfig.chainType === "optimism"
@@ -155,15 +136,6 @@ export class EdrProvider extends EventEmitter implements EthereumProvider {
       {
         enable: loggerConfig.enabled,
         decodeConsoleLogInputsCallback: ConsoleLogger.getDecodedLogs,
-        getContractAndFunctionNameCallback: (
-          code: Buffer,
-          calldata?: Buffer,
-        ) => {
-          return vmTraceDecoder.getContractAndFunctionNamesForCall(
-            code,
-            calldata,
-          );
-        },
         printLineCallback: (message: string, replace: boolean) => {
           if (replace) {
             replaceLastLineFn(message);
@@ -177,14 +149,10 @@ export class EdrProvider extends EventEmitter implements EthereumProvider {
           edrProvider.onSubscriptionEvent(event);
         },
       },
+      tracingConfig,
     );
 
-    const edrProvider = new EdrProvider(
-      provider,
-      vmTraceDecoder,
-      tracingConfig,
-      jsonRpcRequestWrapper,
-    );
+    const edrProvider = new EdrProvider(provider, jsonRpcRequestWrapper);
 
     return edrProvider;
   }
@@ -198,29 +166,13 @@ export class EdrProvider extends EventEmitter implements EthereumProvider {
    */
   private constructor(
     provider: Provider,
-    vmTraceDecoder: VmTraceDecoder,
-    tracingConfig?: TracingConfig,
     jsonRpcRequestWrapper?: JsonRpcRequestWrapperFunction,
   ) {
     super();
 
     this.#provider = provider;
-    this.#vmTraceDecoder = vmTraceDecoder;
-
-    if (tracingConfig !== undefined) {
-      initializeVmTraceDecoder(this.#vmTraceDecoder, tracingConfig);
-    }
 
     this.#jsonRpcRequestWrapper = jsonRpcRequestWrapper;
-  }
-
-  /**
-   * Sets a `VMTracer` that observes EVM throughout requests.
-   *
-   * Used for internal stack traces integration tests.
-   */
-  public setVmTracer(vmTracer?: VMTracerT): void {
-    this.#vmTracer = vmTracer;
   }
 
   public async request(args: RequestArguments): Promise<unknown> {
@@ -232,16 +184,6 @@ export class EdrProvider extends EventEmitter implements EthereumProvider {
     }
 
     const params = args.params ?? [];
-
-    if (args.method === "hardhat_addCompilationResult") {
-      return this.#addCompilationResultAction(
-        ...this.#addCompilationResultParams(params),
-      );
-    } else if (args.method === "hardhat_getStackTraceFailuresCount") {
-      return this.#getStackTraceFailuresCountAction(
-        ...this.#getStackTraceFailuresCountParams(params),
-      );
-    }
 
     const jsonRpcRequest = getJsonRpcRequest(
       this.#nextRequestId++,
@@ -367,87 +309,6 @@ export class EdrProvider extends EventEmitter implements EthereumProvider {
     return typeof response.error !== "undefined";
   }
 
-  #getStackTraceFailuresCountAction(): number {
-    return this.#failedStackTraces;
-  }
-
-  #getStackTraceFailuresCountParams(_params: any[]): [] {
-    // TODO: bring back validation
-    // return validateParams(params);
-    return [];
-  }
-
-  #addCompilationResultParams(
-    params: any[],
-  ): [string, CompilerInput, CompilerOutput] {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- TODO: find replacement for validate params or is this already done in the HTTP Provider?
-    return params as [string, CompilerInput, CompilerOutput];
-  }
-
-  async #addCompilationResultAction(
-    solcVersion: string,
-    compilerInput: CompilerInput,
-    compilerOutput: CompilerOutput,
-  ): Promise<boolean> {
-    let bytecodes;
-    try {
-      bytecodes = createModelsAndDecodeBytecodes(
-        solcVersion,
-        compilerInput,
-        compilerOutput,
-      );
-    } catch (error) {
-      console.warn(
-        chalk.yellow(
-          "The Hardhat Network tracing engine could not be updated. Run Hardhat with --verbose to learn more.",
-        ),
-      );
-
-      log(
-        "VmTraceDecoder failed to be updated. Please report this to help us improve Hardhat.\n",
-        error,
-      );
-
-      return false;
-    }
-
-    for (const bytecode of bytecodes) {
-      this.#vmTraceDecoder.addBytecode(bytecode);
-    }
-
-    return true;
-  }
-
-  async #rawTraceToSolidityStackTrace(
-    rawTrace: RawTrace,
-  ): Promise<SolidityStackTrace | undefined> {
-    const vmTracer = new VmTracer();
-    vmTracer.observe(rawTrace);
-
-    let vmTrace = vmTracer.getLastTopLevelMessageTrace();
-    const vmTracerError = vmTracer.getLastError();
-
-    if (vmTrace !== undefined) {
-      vmTrace = this.#vmTraceDecoder.tryToDecodeMessageTrace(vmTrace);
-    }
-
-    try {
-      if (vmTrace === undefined || vmTracerError !== undefined) {
-        // eslint-disable-next-line no-restricted-syntax -- we may throw non-Hardhat errors inside of an EthereumProvider
-        throw vmTracerError;
-      }
-
-      const solidityTracer = new SolidityTracer();
-      return solidityTracer.getStackTrace(vmTrace);
-    } catch (err) {
-      this.#failedStackTraces += 1;
-      log(
-        "Could not generate stack trace. Please report this to help us improve Hardhat.\n",
-        err,
-      );
-    }
-  }
-
   async #handleEdrResponse(
     edrResponse: Response,
   ): Promise<SuccessfulJsonRpcResponse> {
@@ -459,26 +320,17 @@ export class EdrProvider extends EventEmitter implements EthereumProvider {
       jsonRpcResponse = edrResponse.data;
     }
 
-    const needsTraces = this.#vmTracer !== undefined;
-
-    if (needsTraces) {
-      const rawTraces = edrResponse.traces;
-
-      for (const rawTrace of rawTraces) {
-        this.#vmTracer?.observe(rawTrace);
-      }
-    }
-
     if (this.#isErrorResponse(jsonRpcResponse)) {
       let error;
 
-      const solidityTrace = edrResponse.solidityTrace;
-      let stackTrace: SolidityStackTrace | undefined;
-      if (solidityTrace !== null) {
-        stackTrace = await this.#rawTraceToSolidityStackTrace(solidityTrace);
+      let stackTrace: SolidityStackTrace | null = null;
+      try {
+        stackTrace = edrResponse.stackTrace();
+      } catch (e) {
+        log("Failed to get stack trace: %O", e);
       }
 
-      if (stackTrace !== undefined) {
+      if (stackTrace !== null) {
         error = encodeSolidityStackTrace(
           jsonRpcResponse.error.message,
           stackTrace,
