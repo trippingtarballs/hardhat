@@ -112,7 +112,6 @@ export class EdrProvider extends EventEmitter implements EthereumProvider {
   readonly #provider: Provider;
   readonly #jsonRpcRequestWrapper?: JsonRpcRequestWrapperFunction;
 
-  #failedStackTraces: number = 0;
   #nextRequestId = 1;
 
   /**
