@@ -418,8 +418,7 @@ function getProviderConfig(networkConfig: EdrNetworkConfig): ProviderConfig {
     blockGasLimit: networkConfig.blockGasLimit,
     chainId: BigInt(networkConfig.chainId),
     chains: hardhatChainsToEdrChains(networkConfig.chains),
-    // TODO: remove this cast when EDR updates the interface to accept Uint8Array
-    coinbase: Buffer.from(networkConfig.coinbase),
+    coinbase: networkConfig.coinbase,
     enableRip7212: networkConfig.enableRip7212,
     fork: hardhatForkingConfigToEdrForkConfig(networkConfig.forking),
     genesisState,
