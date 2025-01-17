@@ -9,6 +9,7 @@
     { "path": "../hardhat-ignition-core" },
     { "path": "../hardhat-core" },
     { "path": "../hardhat-network-helpers" },
-    { "path": "../hardhat-verify" }
+    { "path": "../hardhat-verify" },
+    { "path": "../hardhat-ignition-ui" }
   ]
 }
