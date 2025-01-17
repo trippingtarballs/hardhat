@@ -20,8 +20,5 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "references": [
-    { "path": "./tsconfig.node.json" },
-    { "path": "../hardhat-ignition-core" }
-  ]
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
