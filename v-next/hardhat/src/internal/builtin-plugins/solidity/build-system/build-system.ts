@@ -120,16 +120,14 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
 
     await this.#downloadConfiguredCompilers(options?.quiet);
 
-    const compilationJobsPerFile = await this.getCompilationJobs(
+    const compilationJobs = await this.#getCompilationJobs(
       rootFilePaths,
       options,
     );
 
-    if (!(compilationJobsPerFile instanceof Map)) {
-      return compilationJobsPerFile;
+    if (!Array.isArray(compilationJobs)) {
+      return compilationJobs;
     }
-
-    const compilationJobs = [...new Set(compilationJobsPerFile.values())];
 
     // NOTE: We precompute the build ids in parallel here, which are cached
     // internally in each compilation job
@@ -289,10 +287,10 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
     return resultsMap;
   }
 
-  public async getCompilationJobs(
+  async #getCompilationJobs(
     rootFilePaths: string[],
     options?: GetCompilationJobsOptions,
-  ): Promise<CompilationJobCreationError | Map<string, CompilationJob>> {
+  ): Promise<CompilationJobCreationError | CompilationJob[]> {
     await this.#downloadConfiguredCompilers(options?.quiet);
 
     const { dependencyGraph, resolver } = await buildDependencyGraph(
@@ -360,7 +358,7 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
 
     const solcVersionToLongVersion = new Map<string, string>();
 
-    const compilationJobsPerFile = new Map<string, CompilationJob>();
+    const compilationJobs: CompilationJob[] = [];
     for (const [solcConfig, subgraph] of subgraphsWithConfig) {
       let solcLongVersion = solcVersionToLongVersion.get(solcConfig.version);
 
@@ -377,7 +375,31 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
         resolver.getRemappings(), // TODO: Only get the ones relevant to the subgraph?
       );
 
-      for (const [publicSourceName, root] of subgraph.getRoots().entries()) {
+      compilationJobs.push(compilationJob);
+    }
+
+    return compilationJobs;
+  }
+
+  public async getCompilationJobs(
+    rootFilePaths: string[],
+    options?: GetCompilationJobsOptions,
+  ): Promise<CompilationJobCreationError | Map<string, CompilationJob>> {
+    const compilationJobs = await this.#getCompilationJobs(
+      rootFilePaths,
+      options,
+    );
+
+    if (!Array.isArray(compilationJobs)) {
+      return compilationJobs;
+    }
+
+    const compilationJobsPerFile = new Map<string, CompilationJob>();
+
+    for (const compilationJob of compilationJobs) {
+      for (const [publicSourceName, root] of compilationJob.dependencyGraph
+        .getRoots()
+        .entries()) {
         compilationJobsPerFile.set(
           formatRootPath(publicSourceName, root),
           compilationJob,
