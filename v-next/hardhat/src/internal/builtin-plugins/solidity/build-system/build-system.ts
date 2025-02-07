@@ -228,7 +228,7 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
     const isSuccessfulBuild =
       uncachedResults.length === uncachedSuccessfulResults.length;
 
-    const results = [...cachedResults, ...uncachedSuccessfulResults];
+    const results = [...cachedResults, ...uncachedResults];
 
     const contractArtifactsGeneratedByCompilationJob: Map<
       CompilationJob,
@@ -844,10 +844,11 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
       .map(({ mergedCompilationJob, unmergedCompilationJobs }) => {
         const compilerOutput =
           compilerOutputsByCompilationJob.get(mergedCompilationJob);
-        assertHardhatInvariant(
-          compilerOutput !== undefined,
-          "compilerOutput should be defined",
-        );
+
+        // If the compiler output is not available, the job must have failed.
+        if (compilerOutput === undefined) {
+          return [];
+        }
 
         return unmergedCompilationJobs.map((compilationJob) => ({
           compilationJob,
@@ -861,7 +862,9 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
         async ({ compilationJob, compilerOutput }) => {
           const buildId = await compilationJob.getBuildId();
 
-          const allFiles = compilationJob.dependencyGraph.getAllFiles();
+          const allFiles = Array.from(
+            compilationJob.dependencyGraph.getAllFiles(),
+          );
 
           const sources: CompilerOutput["sources"] = {};
           for (const file of allFiles) {
@@ -877,7 +880,7 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
             }
           }
 
-          return this.#compilerOutputCache.set(buildId, { contracts, sources });
+          return this.#compilerOutputCache.set(buildId, { sources, contracts });
         },
       ),
     ).then(() => {
