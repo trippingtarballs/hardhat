@@ -73,6 +73,10 @@ interface MergeResult {
   mergedCompilationJob: CompilationJob;
 }
 
+interface MergeCompilationJobsOptions {
+  mergeCompilationJobs?: boolean;
+}
+
 export interface SolidityBuildSystemOptions {
   readonly solidityConfig: SolidityConfig;
   readonly projectRoot: string;
@@ -128,22 +132,13 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
 
     await this.#downloadConfiguredCompilers(options?.quiet);
 
-    const compilationJobsOrError = await this.#getCompilationJobs(
+    const compilationJobs = await this.#getCompilationJobs(
       rootFilePaths,
       options,
     );
 
-    if (!Array.isArray(compilationJobsOrError)) {
-      return compilationJobsOrError;
-    }
-
-    let compilationJobs = compilationJobsOrError;
-
-    if (options?.mergeCompilationJobs === true) {
-      const mergeResults = await this.#mergeCompilationJobs(compilationJobs);
-      compilationJobs = mergeResults.map(
-        (result) => result.mergedCompilationJob,
-      );
+    if (!Array.isArray(compilationJobs)) {
+      return compilationJobs;
     }
 
     // NOTE: We precompute the build ids in parallel here, which are cached
@@ -157,31 +152,48 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
     const runCompilationJobOptions: RunCompilationJobOptions = {
       quiet: options?.quiet,
     };
-    const results: CompilationResult[] = await pMap(
-      compilationJobs,
-      async (compilationJob) => {
-        const buildId = await compilationJob.getBuildId();
 
-        if (options?.force !== true) {
-          const cachedCompilerOutput =
-            await this.#compilerOutputCache.get(buildId);
-          if (cachedCompilerOutput !== undefined) {
-            log(`Using cached compiler output for build ${buildId}`);
-            return {
-              compilationJob,
-              compilerOutput: cachedCompilerOutput,
-              cached: true,
-            };
-          }
-        }
+    const cachedCompilationJobs: CompilationJob[] = [];
+    const uncachedCompilationJobs: CompilationJob[] = [];
 
+    for (const compilationJob of compilationJobs) {
+      const buildId = await compilationJob.getBuildId();
+
+      if (options?.force !== true && await this.#compilerOutputCache.has(buildId)) {
+        cachedCompilationJobs.push(compilationJob);
+      } else {
+        uncachedCompilationJobs.push(compilationJob);
+      }
+    }
+
+    const mergedCompilationJobs = await this.#mergeCompilationJobs(
+      uncachedCompilationJobs,
+      {
+        mergeCompilationJobs: options?.mergeCompilationJobs,
+      }
+    );
+
+    const cachedResults: CompilationResult[] = await Promise.all(cachedCompilationJobs.map(async (compilationJob) => {
+      const buildId = await compilationJob.getBuildId();
+      const cachedCompilerOutput = await this.#compilerOutputCache.get(buildId);
+      assertHardhatInvariant(cachedCompilerOutput !== undefined, "cachedCompilerOutput should be defined");
+      return {
+        compilationJob,
+        compilerOutput: cachedCompilerOutput,
+        cached: true,
+      };
+    }));
+
+    const uncachedResults: CompilationResult[] = await pMap(
+      mergedCompilationJobs,
+      async ({mergedCompilationJob}) => {
         const compilerOutput = await this.runCompilationJob(
-          compilationJob,
+          mergedCompilationJob,
           runCompilationJobOptions,
         );
 
         return {
-          compilationJob,
+          compilationJob: mergedCompilationJob,
           compilerOutput,
           cached: false,
         };
@@ -194,7 +206,6 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
       },
     );
 
-    const uncachedResults = results.filter((result) => !result.cached);
     const uncachedSuccessfulResults = uncachedResults.filter(
       (result) => !this.#hasCompilationErrors(result.compilerOutput),
     );
@@ -203,6 +214,8 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
 
     const isSuccessfulBuild =
       uncachedResults.length === uncachedSuccessfulResults.length;
+
+    const results = [...cachedResults, ...uncachedSuccessfulResults];
 
     const contractArtifactsGeneratedByCompilationJob: Map<
       CompilationJob,
@@ -402,7 +415,15 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
 
   async #mergeCompilationJobs(
     compilationJobs: CompilationJob[],
+    mergeCompilationJobsOptions?: MergeCompilationJobsOptions,
   ): Promise<MergeResult[]> {
+    if (mergeCompilationJobsOptions?.mergeCompilationJobs !== true) {
+      return compilationJobs.map((job) => ({
+        unmergedCompilationJobs: [job],
+        mergedCompilationJob: job,
+      }));
+    }
+
     log(`Merging compilation jobs`);
 
     // This groups the compilation jobs by solc config. It compares the configs

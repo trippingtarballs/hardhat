@@ -43,6 +43,11 @@ export class ObjectCache<T> {
     return (await exists(filePath)) ? readJsonFile<T>(filePath) : undefined;
   }
 
+  public async has(key: string): Promise<boolean> {
+    const filePath = path.join(this.#path, `${key}.json`);
+    return exists(filePath);
+  }
+
   public async clean(maxAgeMs?: number, maxSize?: number): Promise<void> {
     maxAgeMs ??= this.#defaultMaxAgeMs;
     maxSize ??= this.#defaultMaxSize;
