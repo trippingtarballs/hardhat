@@ -15,8 +15,7 @@ export class CompilationJobImplementation implements CompilationJob {
   public readonly dependencyGraph: DependencyGraph;
   public readonly solcConfig: SolcConfig;
   public readonly solcLongVersion: string;
-
-  readonly #remappings: Remapping[];
+  public readonly remappings: Remapping[];
 
   #buildId: string | undefined;
   #solcInput: CompilerInput | undefined;
@@ -32,7 +31,7 @@ export class CompilationJobImplementation implements CompilationJob {
     this.dependencyGraph = dependencyGraph;
     this.solcConfig = solcConfig;
     this.solcLongVersion = solcLongVersion;
-    this.#remappings = remappings;
+    this.remappings = remappings;
   }
 
   public getSolcInput(): CompilerInput {
@@ -123,7 +122,7 @@ export class CompilationJobImplementation implements CompilationJob {
           settings.evmVersion ??
           getEvmVersionFromSolcVersion(this.solcConfig.version),
         outputSelection,
-        remappings: this.#remappings.map(formatRemapping),
+        remappings: this.remappings.map(formatRemapping),
       },
     };
   }

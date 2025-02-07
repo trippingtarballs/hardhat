@@ -1,4 +1,5 @@
 import type { DependencyGraphImplementation } from "./dependency-graph.js";
+import type { Remapping } from "./resolver/types.js";
 import type { Artifact } from "../../../../types/artifacts.js";
 import type { SolcConfig, SolidityConfig } from "../../../../types/config.js";
 import type { HookManager } from "../../../../types/hooks.js";
@@ -15,7 +16,6 @@ import type { CompilationJob } from "../../../../types/solidity/compilation-job.
 import type {
   CompilerOutput,
   CompilerOutputError,
-  CompilerOutputSources,
 } from "../../../../types/solidity/compiler-io.js";
 import type {
   DependencyGraph,
@@ -461,18 +461,19 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
 
     return Promise.all(
       groupedCompilationJobs.map(async (jobs) => {
-        const { dependencyGraph, resolver } = await buildDependencyGraph(
-          [],
-          this.#options.projectRoot,
-          this.#options.solidityConfig.remappings,
-        );
-
-        const mergedDependencyGraph = jobs.reduce<DependencyGraph>(
-          (acc, job) => {
+        const mergedDependencyGraph = jobs
+          .slice(1)
+          .reduce<DependencyGraph>((acc, job) => {
             return acc.merge(job.dependencyGraph);
-          },
-          dependencyGraph,
-        );
+          }, jobs[0].dependencyGraph);
+
+        const mergedRemappings = jobs.reduce<Remapping[]>((acc, job) => {
+          assertHardhatInvariant(
+            job instanceof CompilationJobImplementation,
+            "job should be a CompilationJobImplementation",
+          );
+          return [...acc, ...job.remappings];
+        }, []);
 
         return {
           unmergedCompilationJobs: jobs,
@@ -480,7 +481,7 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
             mergedDependencyGraph,
             jobs[0].solcConfig, // TODO: Assert that all jobs have the same solc config
             jobs[0].solcLongVersion, // TODO: Assert that all jobs have the same long solc version
-            resolver.getRemappings(), // TODO: Only get the ones relevant to the merged dependency graph? Or merge the remappings from all the jobs?
+            Array.from(new Set(mergedRemappings)),
           ),
         };
       }),
