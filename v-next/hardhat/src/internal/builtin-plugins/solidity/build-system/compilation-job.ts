@@ -1,4 +1,3 @@
-import type { DependencyGraphImplementation } from "./dependency-graph.js";
 import type { Remapping } from "./resolver/types.js";
 import type { BuildInfo } from "../../../../types/artifacts.js";
 import type { SolcConfig } from "../../../../types/config.js";
@@ -25,7 +24,7 @@ export class CompilationJobImplementation implements CompilationJob {
   #resolvedFiles: ResolvedFile[] | undefined;
 
   constructor(
-    dependencyGraph: DependencyGraphImplementation,
+    dependencyGraph: DependencyGraph,
     solcConfig: SolcConfig,
     solcLongVersion: string,
     remappings: Remapping[],

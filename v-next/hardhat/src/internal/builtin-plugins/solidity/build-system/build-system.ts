@@ -16,7 +16,10 @@ import type {
   CompilerOutput,
   CompilerOutputError,
 } from "../../../../types/solidity/compiler-io.js";
-import type { SolidityBuildInfo } from "../../../../types/solidity.js";
+import type {
+  DependencyGraph,
+  SolidityBuildInfo,
+} from "../../../../types/solidity.js";
 
 import os from "node:os";
 import path from "node:path";
@@ -63,6 +66,11 @@ interface CompilationResult {
   compilationJob: CompilationJob;
   compilerOutput: CompilerOutput;
   cached: boolean;
+}
+
+interface MergeResult {
+  unmergedCompilationJobs: CompilationJob[];
+  mergedCompilationJob: CompilationJob;
 }
 
 export interface SolidityBuildSystemOptions {
@@ -120,13 +128,22 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
 
     await this.#downloadConfiguredCompilers(options?.quiet);
 
-    const compilationJobs = await this.#getCompilationJobs(
+    const compilationJobsOrError = await this.#getCompilationJobs(
       rootFilePaths,
       options,
     );
 
-    if (!Array.isArray(compilationJobs)) {
-      return compilationJobs;
+    if (!Array.isArray(compilationJobsOrError)) {
+      return compilationJobsOrError;
+    }
+
+    let compilationJobs = compilationJobsOrError;
+
+    if (options?.mergeCompilationJobs === true) {
+      const mergeResults = await this.#mergeCompilationJobs(compilationJobs);
+      compilationJobs = mergeResults.map(
+        (result) => result.mergedCompilationJob,
+      );
     }
 
     // NOTE: We precompute the build ids in parallel here, which are cached
@@ -309,7 +326,7 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
       dependencyGraph,
     );
 
-    let subgraphsWithConfig: Array<
+    const subgraphsWithConfig: Array<
       [SolcConfig, DependencyGraphImplementation]
     > = [];
     for (const [rootFile, resolvedFile] of dependencyGraph.getRoots()) {
@@ -327,33 +344,6 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
       }
 
       subgraphsWithConfig.push([configOrError, subgraph]);
-    }
-
-    if (options?.mergeCompilationJobs === true) {
-      log(`Merging compilation jobs`);
-
-      const mergedSubgraphsByConfig: Map<
-        SolcConfig,
-        DependencyGraphImplementation
-      > = new Map();
-
-      // Note: This groups the subgraphs by solc config. It compares the configs
-      // based on reference, and not by deep equality. It misses some merging
-      // opportunities, but this is Hardhat v2's behavior and works well enough.
-      for (const [solcConfig, subgraph] of subgraphsWithConfig) {
-        const mergedSubgraph = mergedSubgraphsByConfig.get(solcConfig);
-
-        if (mergedSubgraph === undefined) {
-          mergedSubgraphsByConfig.set(solcConfig, subgraph);
-        } else {
-          mergedSubgraphsByConfig.set(
-            solcConfig,
-            mergedSubgraph.merge(subgraph),
-          );
-        }
-      }
-
-      subgraphsWithConfig = [...mergedSubgraphsByConfig.entries()];
     }
 
     const solcVersionToLongVersion = new Map<string, string>();
@@ -408,6 +398,59 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
     }
 
     return compilationJobsPerFile;
+  }
+
+  async #mergeCompilationJobs(
+    compilationJobs: CompilationJob[],
+  ): Promise<MergeResult[]> {
+    log(`Merging compilation jobs`);
+
+    // This groups the compilation jobs by solc config. It compares the configs
+    // based on reference, and not by deep equality. It misses some merging
+    // opportunities, but this is Hardhat v2's behavior and works well enough.
+    const compilationJobsBySolcConfig = compilationJobs.reduce((acc, job) => {
+      const config = job.solcConfig;
+      const jobs = acc.get(config);
+
+      if (jobs === undefined) {
+        acc.set(config, [job]);
+      } else {
+        jobs.push(job);
+      }
+
+      return acc;
+    }, new Map<SolcConfig, CompilationJob[]>());
+
+    const groupedCompilationJobs = Array.from(
+      compilationJobsBySolcConfig.values(),
+    );
+
+    return Promise.all(
+      groupedCompilationJobs.map(async (jobs) => {
+        const { dependencyGraph, resolver } = await buildDependencyGraph(
+          [],
+          this.#options.projectRoot,
+          this.#options.solidityConfig.remappings,
+        );
+
+        const mergedDependencyGraph = jobs.reduce<DependencyGraph>(
+          (acc, job) => {
+            return acc.merge(job.dependencyGraph);
+          },
+          dependencyGraph,
+        );
+
+        return {
+          unmergedCompilationJobs: jobs,
+          mergedCompilationJob: new CompilationJobImplementation(
+            mergedDependencyGraph,
+            jobs[0].solcConfig, // TODO: Assert that all jobs have the same solc config
+            jobs[0].solcLongVersion, // TODO: Assert that all jobs have the same long solc version
+            resolver.getRemappings(), // TODO: Only get the ones relevant to the merged dependency graph? Or merge the remappings from all the jobs?
+          ),
+        };
+      }),
+    );
   }
 
   public async runCompilationJob(
