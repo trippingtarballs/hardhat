@@ -15,6 +15,7 @@ import type { CompilationJob } from "../../../../types/solidity/compilation-job.
 import type {
   CompilerOutput,
   CompilerOutputError,
+  CompilerOutputSources,
 } from "../../../../types/solidity/compiler-io.js";
 import type {
   DependencyGraph,
@@ -159,34 +160,43 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
     for (const compilationJob of compilationJobs) {
       const buildId = await compilationJob.getBuildId();
 
-      if (options?.force !== true && await this.#compilerOutputCache.has(buildId)) {
+      if (
+        options?.force !== true &&
+        (await this.#compilerOutputCache.has(buildId))
+      ) {
         cachedCompilationJobs.push(compilationJob);
       } else {
         uncachedCompilationJobs.push(compilationJob);
       }
     }
 
-    const mergedCompilationJobs = await this.#mergeCompilationJobs(
+    const mergedUncachedCompilationJobs = await this.#mergeCompilationJobs(
       uncachedCompilationJobs,
       {
         mergeCompilationJobs: options?.mergeCompilationJobs,
-      }
+      },
     );
 
-    const cachedResults: CompilationResult[] = await Promise.all(cachedCompilationJobs.map(async (compilationJob) => {
-      const buildId = await compilationJob.getBuildId();
-      const cachedCompilerOutput = await this.#compilerOutputCache.get(buildId);
-      assertHardhatInvariant(cachedCompilerOutput !== undefined, "cachedCompilerOutput should be defined");
-      return {
-        compilationJob,
-        compilerOutput: cachedCompilerOutput,
-        cached: true,
-      };
-    }));
+    const cachedResults: CompilationResult[] = await Promise.all(
+      cachedCompilationJobs.map(async (compilationJob) => {
+        const buildId = await compilationJob.getBuildId();
+        const cachedCompilerOutput =
+          await this.#compilerOutputCache.get(buildId);
+        assertHardhatInvariant(
+          cachedCompilerOutput !== undefined,
+          "cachedCompilerOutput should be defined",
+        );
+        return {
+          compilationJob,
+          compilerOutput: cachedCompilerOutput,
+          cached: true,
+        };
+      }),
+    );
 
     const uncachedResults: CompilationResult[] = await pMap(
-      mergedCompilationJobs,
-      async ({mergedCompilationJob}) => {
+      mergedUncachedCompilationJobs,
+      async ({ mergedCompilationJob }) => {
         const compilerOutput = await this.runCompilationJob(
           mergedCompilationJob,
           runCompilationJobOptions,
@@ -210,7 +220,10 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
       (result) => !this.#hasCompilationErrors(result.compilerOutput),
     );
 
-    this.#cacheCompilationResults(uncachedSuccessfulResults);
+    this.#cacheCompilationResults(
+      uncachedSuccessfulResults,
+      mergedUncachedCompilationJobs,
+    );
 
     const isSuccessfulBuild =
       uncachedResults.length === uncachedSuccessfulResults.length;
@@ -811,14 +824,62 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
    *
    * @param compilationResults
    */
-  #cacheCompilationResults(compilationResults: CompilationResult[]): void {
-    void Promise.all(
-      compilationResults.map(async (result) => {
-        return this.#compilerOutputCache.set(
-          await result.compilationJob.getBuildId(),
-          result.compilerOutput,
+  #cacheCompilationResults(
+    compilationResults: CompilationResult[],
+    mergeResults: MergeResult[],
+  ): void {
+    const compilerOutputsByCompilationJob = compilationResults.reduce(
+      (acc, { compilationJob, compilerOutput }) => {
+        assertHardhatInvariant(
+          acc.get(compilationJob) === undefined,
+          "compilationJob should be unique",
         );
-      }),
+        acc.set(compilationJob, compilerOutput);
+        return acc;
+      },
+      new Map<CompilationJob, CompilerOutput>(),
+    );
+
+    const compilationJobsWithCompilerOutputs = mergeResults
+      .map(({ mergedCompilationJob, unmergedCompilationJobs }) => {
+        const compilerOutput =
+          compilerOutputsByCompilationJob.get(mergedCompilationJob);
+        assertHardhatInvariant(
+          compilerOutput !== undefined,
+          "compilerOutput should be defined",
+        );
+
+        return unmergedCompilationJobs.map((compilationJob) => ({
+          compilationJob,
+          compilerOutput,
+        }));
+      })
+      .flat();
+
+    void Promise.all(
+      compilationJobsWithCompilerOutputs.map(
+        async ({ compilationJob, compilerOutput }) => {
+          const buildId = await compilationJob.getBuildId();
+
+          const allFiles = compilationJob.dependencyGraph.getAllFiles();
+
+          const sources: CompilerOutput["sources"] = {};
+          for (const file of allFiles) {
+            sources[file.sourceName] = compilerOutput.sources[file.sourceName];
+          }
+
+          let contracts: CompilerOutput["contracts"];
+          if (compilerOutput.contracts !== undefined) {
+            contracts = {};
+            for (const file of allFiles) {
+              contracts[file.sourceName] =
+                compilerOutput.contracts[file.sourceName];
+            }
+          }
+
+          return this.#compilerOutputCache.set(buildId, { contracts, sources });
+        },
+      ),
     ).then(() => {
       return this.#compilerOutputCache.clean();
     });
