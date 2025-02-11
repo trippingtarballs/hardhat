@@ -1,4 +1,4 @@
-import { getLatestSupportedSolcVersion } from "@nomicfoundation/edr";
+import { getLatestSupportedSolcVersion } from "@ignored/edr-optimism";
 import { assert, expect } from "chai";
 import ci from "ci-info";
 import * as fsExtra from "fs-extra";

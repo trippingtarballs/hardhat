@@ -1,4 +1,4 @@
-import { getLatestSupportedSolcVersion } from "@nomicfoundation/edr";
+import { getLatestSupportedSolcVersion } from "@ignored/edr-optimism";
 import semver from "semver";
 
 import {
