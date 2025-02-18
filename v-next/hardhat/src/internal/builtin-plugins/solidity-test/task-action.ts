@@ -91,6 +91,13 @@ const runSolidityTests: NewTaskActionFunction<TestActionArguments> = async (
     .filter(isTestSuiteArtifact)
     .map((artifact) => artifact.id);
 
+  console.log(JSON.stringify(artifacts.map(artifact => {
+    return {
+      id: artifact.id,
+      bytecode: artifact.contract.bytecode
+    }
+  }), null, 2));
+
   console.log("Running Solidity tests");
   console.log();
 
