@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { before, describe, it } from "node:test";
 
-import { bytesToHexString } from "@ignored/hardhat-vnext-utils/hex";
+import { bytesToHexString } from "@nomicfoundation/hardhat-utils/hex";
 
 import { configVariable } from "../../../../src/config.js";
 import { createHardhatRuntimeEnvironment } from "../../../../src/hre.js";
@@ -696,14 +696,9 @@ describe("config-resolution", () => {
       assert.equal(hardfork, HardforkName.LONDON);
     });
 
-    it("should return the latest hardfork if no hardfork is provided and transientStorage is enabled", () => {
+    it("should return the latest hardfork if no hardfork is provided", () => {
       const hardfork = resolveHardfork(undefined, true);
       assert.equal(hardfork, LATEST_HARDFORK);
-    });
-
-    it("should return shanghai if no hardfork is provided and transientStorage is disabled", () => {
-      const hardfork = resolveHardfork(undefined, false);
-      assert.equal(hardfork, HardforkName.SHANGHAI);
     });
   });
 

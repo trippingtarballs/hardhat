@@ -26,8 +26,8 @@ import path from "node:path";
 import {
   hexStringToBytes,
   normalizeHexString,
-} from "@ignored/hardhat-vnext-utils/hex";
-import { isObject } from "@ignored/hardhat-vnext-utils/lang";
+} from "@nomicfoundation/hardhat-utils/hex";
+import { isObject } from "@nomicfoundation/hardhat-utils/lang";
 
 import { DEFAULT_HD_ACCOUNTS_CONFIG_PARAMS } from "./accounts/constants.js";
 import {
@@ -434,17 +434,13 @@ export function resolveChains(
 
 export function resolveHardfork(
   hardfork: string | undefined,
-  enableTransientStorage: boolean | undefined,
+  _enableTransientStorage: boolean | undefined,
 ): string {
   if (hardfork !== undefined) {
     return hardfork;
   }
 
-  if (enableTransientStorage === true) {
-    return LATEST_HARDFORK;
-  } else {
-    return HardforkName.SHANGHAI;
-  }
+  return LATEST_HARDFORK;
 }
 
 export function resolveInitialBaseFeePerGas(

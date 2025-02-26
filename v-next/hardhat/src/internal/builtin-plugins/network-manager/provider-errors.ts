@@ -1,7 +1,7 @@
 import type { ProviderRpcError } from "../../../types/providers.js";
 
-import { CustomError } from "@ignored/hardhat-vnext-utils/error";
-import { isObject } from "@ignored/hardhat-vnext-utils/lang";
+import { CustomError } from "@nomicfoundation/hardhat-utils/error";
+import { isObject } from "@nomicfoundation/hardhat-utils/lang";
 
 const IS_PROVIDER_ERROR_PROPERTY_NAME = "_isProviderError";
 
@@ -125,5 +125,13 @@ export class InvalidResponseError extends ProviderError {
 
   constructor(message: string = "Invalid response", parent?: Error) {
     super(message, InvalidResponseError.CODE, parent);
+  }
+}
+
+export class UnknownError extends ProviderError {
+  public static readonly CODE = -1;
+
+  constructor(message: string = "Unknown error", parent?: Error) {
+    super(message, UnknownError.CODE, parent);
   }
 }

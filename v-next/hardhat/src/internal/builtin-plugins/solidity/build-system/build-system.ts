@@ -25,16 +25,16 @@ import type {
 import os from "node:os";
 import path from "node:path";
 
-import { assertHardhatInvariant } from "@ignored/hardhat-vnext-errors";
+import { assertHardhatInvariant } from "@nomicfoundation/hardhat-errors";
 import {
   getAllDirectoriesMatching,
   getAllFilesMatching,
   readJsonFile,
   remove,
   writeUtf8File,
-} from "@ignored/hardhat-vnext-utils/fs";
-import { shortenPath } from "@ignored/hardhat-vnext-utils/path";
-import { pluralize } from "@ignored/hardhat-vnext-utils/string";
+} from "@nomicfoundation/hardhat-utils/fs";
+import { shortenPath } from "@nomicfoundation/hardhat-utils/path";
+import { pluralize } from "@nomicfoundation/hardhat-utils/string";
 import chalk from "chalk";
 import debug from "debug";
 import pMap from "p-map";
@@ -220,7 +220,7 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
       (result) => !this.#hasCompilationErrors(result.compilerOutput),
     );
 
-    this.#cacheCompilationResults(
+    const cachingCompilationResults = this.#cacheCompilationResults(
       uncachedSuccessfulResults,
       mergedUncachedCompilationJobs,
     );
@@ -271,8 +271,6 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
         "We emitted contract artifacts for all the jobs if the build was successful",
       );
 
-      const buildId = await result.compilationJob.getBuildId();
-
       const errors = await Promise.all(
         (result.compilerOutput.errors ?? []).map((error) =>
           this.remapCompilerError(result.compilationJob, error, true),
@@ -292,7 +290,7 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
         if (!successfulResult) {
           resultsMap.set(formatRootPath(publicSourceName, root), {
             type: FileBuildResultType.BUILD_FAILURE,
-            buildId,
+            compilationJob: result.compilationJob,
             errors,
           });
 
@@ -302,7 +300,7 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
         if (result.cached) {
           resultsMap.set(formatRootPath(publicSourceName, root), {
             type: FileBuildResultType.CACHE_HIT,
-            buildId,
+            compilationJob: result.compilationJob,
             contractArtifactsGenerated:
               contractArtifactsGenerated.get(publicSourceName) ?? [],
             warnings: errors,
@@ -313,7 +311,7 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
 
         resultsMap.set(formatRootPath(publicSourceName, root), {
           type: FileBuildResultType.BUILD_SUCCESS,
-          buildId,
+          compilationJob: result.compilationJob,
           contractArtifactsGenerated:
             contractArtifactsGenerated.get(publicSourceName) ?? [],
           warnings: errors,
@@ -326,6 +324,9 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
         this.#printCompilationResult(compilationJobs);
       }
     }
+
+    // We wait for the compilation results to be cached before returning
+    await cachingCompilationResults;
 
     return resultsMap;
   }
@@ -810,25 +811,10 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
     return `${error.type}: ${error.message}`.replace(/[:\s]*$/g, "").trim();
   }
 
-  /** This function caches the compilation results in the compiler output cache.
-   *
-   * Please note that it does **NOT** wait for the writes/clean to finish. This
-   * is because we don't want to hold up the compilation process.
-   *
-   * We accept that some of the writes might fail. This is only safe because
-   * the write operation first writes to a temporary file, and only once that
-   * is done, it moves the file to the final location.
-   *
-   * If we notice that the amount of write failures is too high, or that the
-   * cache is not getting cleaned up often enough, we should reconsider this
-   * approach.
-   *
-   * @param compilationResults
-   */
-  #cacheCompilationResults(
+  async #cacheCompilationResults(
     compilationResults: CompilationResult[],
     mergeResults: MergeResult[],
-  ): void {
+  ): Promise<void> {
     const compilerOutputsByCompilationJob = compilationResults.reduce(
       (acc, { compilationJob, compilerOutput }) => {
         assertHardhatInvariant(
@@ -858,7 +844,7 @@ export class SolidityBuildSystemImplementation implements SolidityBuildSystem {
       })
       .flat();
 
-    void Promise.all(
+    return Promise.all(
       compilationJobsWithCompilerOutputs.map(
         async ({ compilationJob, compilerOutput }) => {
           const buildId = await compilationJob.getBuildId();

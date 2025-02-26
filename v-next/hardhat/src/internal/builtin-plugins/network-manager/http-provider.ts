@@ -8,10 +8,11 @@ import type {
 import type {
   Dispatcher,
   RequestOptions,
-} from "@ignored/hardhat-vnext-utils/request";
+} from "@nomicfoundation/hardhat-utils/request";
 
-import { HardhatError } from "@ignored/hardhat-vnext-errors";
-import { sleep, isObject } from "@ignored/hardhat-vnext-utils/lang";
+import { HardhatError } from "@nomicfoundation/hardhat-errors";
+import { ensureError } from "@nomicfoundation/hardhat-utils/error";
+import { sleep, isObject } from "@nomicfoundation/hardhat-utils/lang";
 import {
   getDispatcher,
   isValidUrl,
@@ -20,7 +21,7 @@ import {
   ConnectionRefusedError,
   RequestTimeoutError,
   ResponseStatusCodeError,
-} from "@ignored/hardhat-vnext-utils/request";
+} from "@nomicfoundation/hardhat-utils/request";
 
 import { EDR_NETWORK_REVERT_SNAPSHOT_EVENT } from "../../constants.js";
 import { getHardhatVersion } from "../../utils/package.js";
@@ -31,7 +32,11 @@ import {
   isFailedJsonRpcResponse,
   parseJsonRpcResponse,
 } from "./json-rpc.js";
-import { ProviderError, LimitExceededError } from "./provider-errors.js";
+import {
+  ProviderError,
+  LimitExceededError,
+  UnknownError,
+} from "./provider-errors.js";
 
 const TOO_MANY_REQUEST_STATUS = 429;
 const MAX_RETRIES = 6;
@@ -181,6 +186,8 @@ export class HttpProvider extends BaseProvider {
         this.#dispatcher,
       );
     } catch (e) {
+      ensureError(e);
+
       if (e instanceof ConnectionRefusedError) {
         throw new HardhatError(
           HardhatError.ERRORS.NETWORK.CONNECTION_REFUSED,
@@ -218,7 +225,8 @@ export class HttpProvider extends BaseProvider {
         throw new LimitExceededError(undefined, e);
       }
 
-      throw e;
+      // eslint-disable-next-line no-restricted-syntax -- allow throwing ProviderError
+      throw new UnknownError(e.message, e);
     }
 
     return parseJsonRpcResponse(await response.body.text());

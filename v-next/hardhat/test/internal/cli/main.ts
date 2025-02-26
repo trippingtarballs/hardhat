@@ -14,13 +14,13 @@ import assert from "node:assert/strict";
 import { afterEach, before, describe, it, mock } from "node:test";
 import { pathToFileURL } from "node:url";
 
-import { HardhatError } from "@ignored/hardhat-vnext-errors";
-import { isCi } from "@ignored/hardhat-vnext-utils/ci";
+import { HardhatError } from "@nomicfoundation/hardhat-errors";
 import {
   assertThrowsHardhatError,
   assertRejectsWithHardhatError,
   useFixtureProject,
 } from "@nomicfoundation/hardhat-test-utils";
+import { isCi } from "@nomicfoundation/hardhat-utils/ci";
 import chalk from "chalk";
 import debug from "debug";
 
@@ -226,11 +226,13 @@ AVAILABLE TASKS:
   clean                    Clears the cache and deletes all artifacts
   compile                  Compiles your project
   console                  Opens a hardhat console
-  flatten                  Flattens and prints contracts and their dependencies. If no file is passed, all the contracts in the project will be flattened.
+  coverage                 Not implemented yet - to be available soon
+  flatten                  Flattens and prints contracts and their dependencies
   node                     Starts a JSON-RPC server on top of Hardhat Network
   run                      Runs a user-defined script after compiling the project
   task                     A task that uses arg1
   test                     Runs all your tests
+  verify                   Not implemented yet - to be available soon
 
 AVAILABLE SUBTASKS:
 

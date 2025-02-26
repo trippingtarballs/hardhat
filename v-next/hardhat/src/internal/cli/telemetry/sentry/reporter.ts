@@ -1,11 +1,14 @@
 import {
   HardhatError,
   HardhatPluginError,
-} from "@ignored/hardhat-vnext-errors";
+} from "@nomicfoundation/hardhat-errors";
 import { flush } from "@sentry/node";
 import debug from "debug";
 
-import { ProviderError } from "../../../builtin-plugins/network-manager/provider-errors.js";
+import {
+  ProviderError,
+  UnknownError,
+} from "../../../builtin-plugins/network-manager/provider-errors.js";
 import { getHardhatVersion } from "../../../utils/package.js";
 import { isTelemetryAllowed } from "../telemetry-permissions.js";
 
@@ -13,11 +16,10 @@ import { getSubprocessTransport } from "./transport.js";
 
 const log = debug("hardhat:cli:telemetry:sentry:reporter");
 
-// TODO: replace with PROD version
 // export const SENTRY_DSN =
-//   "https://38ba58bb85fa409e9bb7f50d2c419bc2@o385026.ingest.sentry.io/522486955555555555";
+//   "https://d578a176729662a28e7a8da268d36912@o385026.ingest.us.sentry.io/4507685793103872"; // DEV
 export const SENTRY_DSN =
-  "https://d578a176729662a28e7a8da268d36912@o385026.ingest.us.sentry.io/4507685793103872"; // DEV
+  "https://572b03708e298427cc72fc26dac1e8b2@o385026.ingest.us.sentry.io/4508780138856448"; // PROD
 
 export async function sendErrorTelemetry(
   error: Error,
@@ -128,8 +130,11 @@ class Reporter {
       return false;
     }
 
-    if (ProviderError.isProviderError(error)) {
-      // We don't report network related errors
+    if (
+      ProviderError.isProviderError(error) &&
+      error.code !== UnknownError.CODE
+    ) {
+      // We don't report known network related errors
       return false;
     }
 
