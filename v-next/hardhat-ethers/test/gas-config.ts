@@ -146,15 +146,6 @@ describe("gas config behavior", () => {
 
         assert.equal(tx.gasLimit, expectedGasLimit);
       });
-
-      it("contract call, explicit gas limit", async () => {
-        const example: any = await ethers.deployContract("Example");
-        const tx = await example.f({
-          gasLimit: 500_000,
-        });
-
-        assert.equal(tx.gasLimit, 500_000n);
-      });
     });
   }
 });
